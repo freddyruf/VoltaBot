@@ -136,7 +136,7 @@ def prof_info(msg,bot,orario,giorno): #function to get the info about the profes
         bot.send_message(msg.chat.id, text="Sei nel giorno sbagliato")
         return 0
 
-
+    #ciao
     if(orario == -1):
         Ora = currentDateTime.hour  # actual hour
     else:
