@@ -1,0 +1,57 @@
+[
+  {
+    "response_type": "saluto",
+    "user_input": ["ciao", "salve", "hey", "buon giorno", "buongiorno", "buona sera", "buonasera", "hi","hello", "hola"],
+    "bot_response": "Salve",
+    "required_words": []
+  },
+  {
+    "response_type": "saluto",
+    "user_input": ["arriederci", "addio", "saluti", "saluto", "buonanotte"],
+    "bot_response": "arrivederci!",
+    "required_words": []
+  },
+  {
+    "response_type": "greeting",
+    "user_input": ["piacere", "di", "conoscerti", "conoscerla"],
+    "bot_response": "Il piacere è tutto mio!",
+    "required_words": ["piacere"]
+  },
+  {
+    "response_type": "risultato",
+    "user_input": ["aula", "ora", "classe", "dove", "?","trova","aula","classe","palazzina","piano","cerca","trovare","professore", "professoressa"],
+    "bot_response": "trovato",
+    "required_words": []
+  },
+  {
+    "response_type": "domanda",
+    "user_input": ["che", "giorno", "è"],
+    "bot_response": "oggi è il",
+    "required_words": ["che", "giorno"]
+  },
+  {
+    "response_type": "domanda",
+    "user_input": ["come", "ti", "chiami","qual è", "nome"],
+    "bot_response": "mi chiamo Cristina",
+    "required_words": ["come","chiami"]
+  },
+  {
+    "response_type": "domanda",
+    "user_input": ["qual è","nome"],
+    "bot_response": "mi chiamo Cristina",
+    "required_words": ["nome"]
+  },
+  {
+    "response_type": "domanda",
+    "user_input": ["come", "stai"],
+    "bot_response": "Io sto bene, grazie.",
+    "required_words": ["come", "stai"]
+  },
+  {
+    "response_type": "domanda",
+    "user_input": ["come", "va"],
+    "bot_response": "Alla grande. Grazie per avermelo chiesto",
+    "required_words": ["come", "va"]
+  }
+
+]

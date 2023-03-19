@@ -1,0 +1,3 @@
+api_id=2002222
+api_hash="347b5540bacc6fd007d605760f82a72f"
+
