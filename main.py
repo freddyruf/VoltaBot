@@ -375,7 +375,7 @@ def Main(client,message):
             message.text = temp #original message
 
 
-    elif(message.text==-1):
+    elif(response=="Puoi ripetere?"):
         tastieraPrima=ReplyKeyboardMarkup(tastiera,one_time_keyboard=True,resize_keyboard=True)
         tastieraSeconda=ReplyKeyboardMarkup(tastiera2,one_time_keyboard=True,resize_keyboard=True) #set the keyboards
         tastieraTerza=ReplyKeyboardMarkup(tastiera3,one_time_keyboard=True,resize_keyboard=True)
