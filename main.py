@@ -1,6 +1,5 @@
 import json
 import re
-import random_responses
 from pyrogram import filters
 from dettails import api_hash 
 from dettails import api_id
@@ -222,7 +221,7 @@ def cerca_orario(str): #function to find the hour in the string
         elif (c == "quarta"):
             return 11
         elif (c == "quinta"):
-            tot = 12
+            return 12
         elif (c == "sesta"):
             return 13
         elif (c == "settima"):
@@ -258,9 +257,9 @@ def cerca_orario(str): #function to find the hour in the string
 #searching the name of the professor
 def find2(str):
     str = re.split(' ', str.upper())
-    for c in str:
-        for i in allKeyboard:
-            for z in i:
+    for c in str: #entro nella lista di parole
+        for i in allKeyboard: #entro nella lista di liste di tasti
+            for z in i: #entro nella lista di tasti
                 if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
                     return z
     return 0

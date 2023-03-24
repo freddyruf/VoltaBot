@@ -1,6 +1,5 @@
 import json
 import re
-import random_responses
 from pyrogram import filters
 from dettails import api_hash 
 from dettails import api_id
@@ -297,9 +296,12 @@ def cerca_giorno(str):
 engine= init()
 voices=(engine.getProperty("voices"))
 engine.setProperty('voice',voices[0].id)
+rate = engine.getProperty('rate')
+engine.setProperty('rate', rate - 50)  # Riduci la velocità di 50 unità
 while True:
     recognizer_instance = sr.Recognizer()
     with sr.Microphone() as source:
+
         recognizer_instance.adjust_for_ambient_noise(source)
         print("Sono in ascolto parla pure..")
         audio = recognizer_instance.listen(source)
