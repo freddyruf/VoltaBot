@@ -309,7 +309,6 @@ while True:
 
             response = get_response(text)  # get the response from the type of message requested
             temp = text  # save the message
-            print(text)
 
             if (response == "trovato"):  # asking for a professor
                 text = find2(text)  # modify the message text to the name of the professor (to work in some functions)
@@ -317,7 +316,6 @@ while True:
                 if (text != 0):  # if the professor is found
 
                     ora = cerca_orario(temp)  # search the time
-                    print(ora)
 
                     giorno = cerca_giorno(temp)  # search the day
                     info = prof_info(text,ora,giorno)  # get the info about the professor (ora and giorno can be '-1' if not found)
