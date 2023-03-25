@@ -20,6 +20,13 @@ from pyrogram import Client
 
 bot = Client("my_account", api_id=api_id, api_hash=api_hash)
 
+feedmessage=""
+feedresponse=""
+feedbot=""
+
+polliceInSu='\U0001F44D'
+polliceInGiù='\U0001F44E'
+
 def load_json(file):
     with open(file) as bot_responses:
         print(f"Loaded '{file}' successfully!")   #JSON file loaded
@@ -82,8 +89,9 @@ def get_response(input_string):
 
 
 # {{{ creating connection
+connection = None
 def create_connection(host_name, user_name, user_password):
-    connection = None
+    global connection
     try:
         connection = mysql.connector.connect(
             host=host_name,
@@ -99,7 +107,25 @@ def create_connection(host_name, user_name, user_password):
 connection = create_connection("localhost", "root", "")
 #}}} closing the connection function
 
-cursor = connection.cursor() #cursor /Read-only attribute describing the result of a query.
+cursor = connection.cursor(buffered=True) #cursor /Read-only attribute describing the result of a query.
+
+
+
+def feedbacktry(message,response,risposta,emojiKeyboard,bot):
+    global feedmessage
+    global feedresponse
+    global feedbot
+
+    global polliceInSu
+    global polliceInGiù
+
+
+    if (random.randint(1, 4) == 1):
+        bot.send_message(message.chat.id, text="Potresti darci un feedback? " + polliceInSu + " o " + polliceInGiù,
+                         reply_markup=emojiKeyboard)  # ask the user what he wants to do
+        feedmessage = message.text
+        feedresponse = response
+        feedbot = risposta
 
 
 tastiera=tastiera
@@ -342,6 +368,14 @@ def find(client,message):
 @bot.on_message(filters.text)
 
 def Main(client,message):
+
+    #thumbs up and down unicode
+    global polliceInSu
+    global polliceInGiù
+
+    emojiKey=[[polliceInSu,polliceInGiù]]
+    emojiKeyboard = ReplyKeyboardMarkup(emojiKey, one_time_keyboard=True, resize_keyboard=True)
+
     global MAIN_BUTTONS
     global tastiera
     global tastiera2
@@ -349,10 +383,43 @@ def Main(client,message):
     global tastiera4
     global allKeyboard
 
+    global feedbot
+    global feedresponse
+    global feedmessage
+
+    global cursor
+
+    risposta=""
+    continuaricerca=True
+
+    if(message.text==polliceInSu or message.text==polliceInGiù):
+        global connection
+        now = datetime.now()
+        # Ottenere la data attuale come stringa nel formato 'YYYY-MM-DD'
+        date_str = now.strftime('%Y-%m-%d')
+
+        # Ottenere l'ora attuale come stringa nel formato 'HH:MM:SS'
+        time_str = now.strftime('%H:%M:%S')
+
+        timeinfo=date_str+" "+time_str
+        if(message.text==polliceInSu):
+            feed=1
+        else:
+            feed=0
+
+
+        cursor.execute(f"INSERT INTO log (tempo, usertext, requestinfo, responsetext, feedback) VALUES ('{timeinfo}', '{feedmessage}','{feedresponse}', '{feedbot}', {feed});")
+
+        connection.commit()
+        continuaricerca=False
+        bot.send_message(message.chat.id, text="Grazie per il feedback!", reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True))
+
+
     response=get_response(message.text) #get the response from the type of message requested
     temp=message.text #save the message
 
-    if(response=="trovato"): #asking for a professor
+
+    if(response=="trovato" and continuaricerca): #asking for a professor
         message.text=find2(message.text) #modify the message text to the name of the professor (to work in some functions)
 
         if(message.text!=0): #if the professor is found
@@ -363,18 +430,23 @@ def Main(client,message):
             info=prof_info(message,bot,ora,giorno) #get the info about the professor (ora and giorno can be '-1' if not found)
             if (info == 1):
                 bot.send_message(message.chat.id, text=f"Il prof {message.text.title()} è libero") #if he is free
+                risposta=f"Il prof {message.text.title()} è libero"
             elif (info == 2):
                 bot.send_message(message.chat.id, text=f"Il prof oggi non c'è a scuola") #if he is not in school all time
+                risposta=f"Il prof oggi non c'è a scuola"
             elif (info != 0):
                 bot.send_message(message.chat.id,
                                  text=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}") #if he is in school
+                risposta=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}"
             else:
                 message.text = temp #original message
+            message.text=temp
+            feedbacktry(message, response, risposta, emojiKeyboard, bot)
         else:
             message.text = temp #original message
 
 
-    elif(response=="Puoi ripetere?"):
+    elif(response=="Puoi ripetere?" and continuaricerca):
         tastieraPrima=ReplyKeyboardMarkup(tastiera,one_time_keyboard=True,resize_keyboard=True)
         tastieraSeconda=ReplyKeyboardMarkup(tastiera2,one_time_keyboard=True,resize_keyboard=True) #set the keyboards
         tastieraTerza=ReplyKeyboardMarkup(tastiera3,one_time_keyboard=True,resize_keyboard=True)
@@ -401,12 +473,23 @@ def Main(client,message):
                 info=prof_info(message,bot,-1,-1) #get the info about the professor for today in this moment
                 if(info==1):
                     bot.send_message(message.chat.id, text=f"Il prof {message.text.title()} non è in una classe") #if he is free
+                    risposta=f"Il prof {message.text.title()} non è in una classe"
                 elif (info==2):
                     bot.send_message(message.chat.id, text=f"Il prof oggi non c'è a scuola") #if he is not in school all time
+                    risposta=f"Il prof oggi non c'è a scuola"
                 elif(info!=0):
                     bot.send_message(message.chat.id ,text=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula numero: {info[2]}") #if he is in school
+                    risposta=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula numero: {info[2]}"
             else:
                 bot.send_message(message.chat.id, text="Prof non trovato, ricontrolla e manda un nuovo messaggio") #if the professor is not found
+                risposta="Prof non trovato, ricontrolla e manda un nuovo messaggio"
+
+            feedbacktry(message,response,risposta,emojiKeyboard,bot)
     else:
-        bot.send_message(message.chat.id, text=response) #send the response of type of message requested
+        if (continuaricerca):
+            bot.send_message(message.chat.id, text=response) #send the response of type of message requested
+            feedbacktry(message, response, risposta, emojiKeyboard, bot)
+
+
+
 bot.run()
