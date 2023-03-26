@@ -10,12 +10,16 @@ from keyboards import tastiera3
 from keyboards import tastiera4
 from keyboards import allKeyboard
 
-
 import tgcrypto
 import random
 import time
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 from pyrogram import Client
+
+import mysql.connector
+from mysql.connector import Error
+from datetime import datetime
+import re
 
 
 bot = Client("my_account", api_id=api_id, api_hash=api_hash)
@@ -26,21 +30,22 @@ feedbot=""
 
 polliceInSu='\U0001F44D'
 polliceInGiù='\U0001F44E'
+risposta= ""
+
+
+tastiera=tastiera
+tastiera2=tastiera2
+tastiera3=tastiera3         #keyboards
+tastiera4=tastiera4
+allKeyboard=allKeyboard
 
 def load_json(file):
     with open(file) as bot_responses:
         print(f"Loaded '{file}' successfully!")   #JSON file loaded
         return json.load(bot_responses)
-
-
 # Store JSON data
 response_data = load_json("bot.json")
 
-
-import mysql.connector
-from mysql.connector import Error
-from datetime import datetime
-import re
 
 #function to find the type of message
 def get_response(input_string):
@@ -83,7 +88,10 @@ def get_response(input_string):
 
     # If there is no good response, return a random one.
     if best_response != 0:
-        return response_data[response_index]["bot_response"]
+        rt=["",""]
+        rt[0] = response_data[response_index]["bot_response"]
+        rt[1] = response_data[response_index]["response_type"]
+        return rt
 
     return "Puoi ripetere?"
 
@@ -110,8 +118,51 @@ connection = create_connection("localhost", "root", "")
 cursor = connection.cursor(buffered=True) #cursor /Read-only attribute describing the result of a query.
 
 
+def addLog(message):  # function to add the log into the database
+    global cursor
+    global connection
+    global feedbot
+    global feedresponse
+    global feedmessage
 
-def feedbacktry(message,response,risposta,emojiKeyboard,bot):
+
+    now = datetime.now()
+    # Ottenere la data attuale come stringa nel formato 'YYYY-MM-DD'
+    date_str = now.strftime('%Y-%m-%d')
+
+    # Ottenere l'ora attuale come stringa nel formato 'HH:MM:SS'
+    time_str = now.strftime('%H:%M:%S')
+
+    timeinfo = date_str + " " + time_str # time info
+
+    if (message.text == polliceInSu): # if the user give a feedback
+        feed = 1
+    elif (message.text == polliceInGiù): # if the user give a feedback
+        feed = 0
+    else: # if the user don't give a feedback
+        feed = None
+
+    if (feed!=None): # if the user give a feedback
+        cursor.execute(
+            f"INSERT INTO log (tempo, usertext, requestinfo, responsetext, feedback) VALUES ('{timeinfo}', '{feedmessage}','{feedresponse}', '{feedbot}', {feed});")
+
+    else: # if the user don't give a feedback
+        cursor.execute(
+            f"INSERT INTO log (tempo, usertext, requestinfo, responsetext) VALUES ('{timeinfo}', '{feedmessage}','{feedresponse}', '{feedbot}');")
+
+    connection.commit() # commit the changes
+
+def addLogInfo(message,response, risposta): # function to prepare the log into the database
+    global feedbot
+    global feedresponse
+    global feedmessage
+
+    feedmessage = message.text
+    feedresponse = response
+    feedbot = risposta
+
+
+def feedbacktry(message,response,risposta,emojiKeyboard,bot): # function to not always ask the user if he wants to give a feedback
     global feedmessage
     global feedresponse
     global feedbot
@@ -120,21 +171,21 @@ def feedbacktry(message,response,risposta,emojiKeyboard,bot):
     global polliceInGiù
 
 
-    if (random.randint(1, 4) == 1):
+    if (random.randint(1, 5) == 1): # 1/5 chance to ask the user if he wants to give a feedback
         bot.send_message(message.chat.id, text="Potresti darci un feedback? " + polliceInSu + " o " + polliceInGiù,
                          reply_markup=emojiKeyboard)  # ask the user what he wants to do
-        feedmessage = message.text
+        feedmessage = message.text # save the message
         feedresponse = response
         feedbot = risposta
+        return True
+    else:
+        return False
 
 
-tastiera=tastiera
-tastiera2=tastiera2
-tastiera3=tastiera3         #keyboards
-tastiera4=tastiera4
-allKeyboard=allKeyboard
+
 
 def prof_info(msg,bot,orario,giorno): #function to get the info about the professor
+    global risposta
     global cursor
     cursor.execute(f"SELECT ID FROM professori WHERE Nome = '{msg.text}'")
     PROF_ID = cursor.fetchall()  # id prof
@@ -158,6 +209,7 @@ def prof_info(msg,bot,orario,giorno): #function to get the info about the profes
     elif (Giorno == 5):
         Giorno = "orarioprofvenerdì"
     else:
+        risposta= "Sei nel giorno sbagliato"
         bot.send_message(msg.chat.id, text="Sei nel giorno sbagliato")
         return 0
 
@@ -169,6 +221,7 @@ def prof_info(msg,bot,orario,giorno): #function to get the info about the profes
 
     Ora -= 7              #indent for the database
     if ((Giorno != "orarioproflunedì" and Ora > 6) or Ora <= 0 or Ora > 8):  # control if the hour is correct
+        risposta='Ora sbagliata!'
         bot.send_message(msg.chat.id, text="Ora sbagliata!")
         return 0
     if (Ora == 1):
@@ -235,49 +288,48 @@ def cerca_orario(str): #function to find the hour in the string
     str = re.split(' ', str.lower())
     tot = 0
     nulla=True
-    for c in str:
+    for c in str: #for each word in the string in
 
-        #in words
-        if (c == "prima"):
+        # words
+        if (c == "prima"): #if the word is "prima" the hour is 1
             return 8
-        elif (c == "seconda"):
+        elif (c == "seconda"): #if the word is "seconda" the hour is 2
             return 9
-        elif (c == "terza"):
+        elif (c == "terza"): #if the word is "terza" the hour is 3
             return 10
-        elif (c == "quarta"):
+        elif (c == "quarta"): #if the word is "quarta" the hour is 4
             return 11
-        elif (c == "quinta"):
+        elif (c == "quinta"): #if the word is "quinta" the hour is 5
             return 12
-        elif (c == "sesta"):
+        elif (c == "sesta"): #if the word is "sesta" the hour is 6
             return 13
-        elif (c == "settima"):
+        elif (c == "settima"): #if the word is "settima" the hour is 7
             return 14
-        elif (c == "ottava"):
+        elif (c == "ottava"): #if the word is "ottava" the hour is 8
             return 15
 
         #in numbers
-        elif (ord(c[0]) > 47 and ord(c[0]) < 58):
+        elif (ord(c[0]) > 47 and ord(c[0]) < 58): #if the first char is a number
 
-            string = re.split(':', c)
+            string = re.split(':', c) #split the string in the char ":"
 
-            for i in string:
-
-                if (len(i) == 2 and ord(i[1]) > 47 and ord(i[1]) < 58):
+            for i in string: #for each element in the list
+                if (len(i) == 2 and ord(i[1]) > 47 and ord(i[1]) < 58):  #if the element is a number
                     nulla=False
-                    tot = (ord(i[0]) - 48) * 10 + (ord(i[1]) - 48)
+                    tot = (ord(i[0]) - 48) * 10 + (ord(i[1]) - 48) #convert the string in a number
                     break
-                elif("?" in i):
+                elif("?" in i): #if the element is a "?" the hour is the frist number
                     nulla = False
                     tot = ord(i[0]) - 48
                     break
-
                 else:
                     nulla=False
                     tot = ord(i[0]) - 48
                     break
+
     if(nulla): #not found
         return -1
-    else:
+    else: #found
         return tot
 
 #searching the name of the professor
@@ -293,21 +345,21 @@ def find2(str):
 
 #searching the day
 def cerca_giorno(str):
-    str = re.split(' ', str.lower())
+    str = re.split(' ', str.lower()) #split the string in the char " "
     for c in str:
-        if ("luned" in c):
+        if ("luned" in c): #if the word is "lunedì" the day is 1
             return 1
-        elif ("marted" in c):
+        elif ("marted" in c): #if the word is "martedì" the day is 2
             return 2
-        elif ("mercoled" in c):
+        elif ("mercoled" in c): #if the word is "mercoledì" the day is 3
             return 3
-        elif ("gioved" in c):
+        elif ("gioved" in c): #if the word is "giovedì" the day is 4
             return 4
-        elif ("venerd" in c):
+        elif ("venerd" in c):   #if the word is "venerdì" the day is 5
             return 5
-        elif ("sabato" in c):
+        elif ("sabato" in c): #if the word is "sabato" the day is 6
             return 6
-        elif ("domenica" in c):
+        elif ("domenica" in c): #if the word is "domenica" the day is 7
             return 7
     return -1
 
@@ -320,6 +372,7 @@ MAIN_BUTTONS = [
                ]
 
 
+#telegram functions
 
 @bot.on_message(filters.command(commands=['start']))   #start
 def start(client,message):
@@ -372,7 +425,6 @@ def Main(client,message):
     #thumbs up and down unicode
     global polliceInSu
     global polliceInGiù
-
     emojiKey=[[polliceInSu,polliceInGiù]]
     emojiKeyboard = ReplyKeyboardMarkup(emojiKey, one_time_keyboard=True, resize_keyboard=True)
 
@@ -387,35 +439,20 @@ def Main(client,message):
     global feedresponse
     global feedmessage
 
-    global cursor
+    global risposta
 
-    risposta=""
     continuaricerca=True
 
-    if(message.text==polliceInSu or message.text==polliceInGiù):
-        global connection
-        now = datetime.now()
-        # Ottenere la data attuale come stringa nel formato 'YYYY-MM-DD'
-        date_str = now.strftime('%Y-%m-%d')
-
-        # Ottenere l'ora attuale come stringa nel formato 'HH:MM:SS'
-        time_str = now.strftime('%H:%M:%S')
-
-        timeinfo=date_str+" "+time_str
-        if(message.text==polliceInSu):
-            feed=1
-        else:
-            feed=0
-
-
-        cursor.execute(f"INSERT INTO log (tempo, usertext, requestinfo, responsetext, feedback) VALUES ('{timeinfo}', '{feedmessage}','{feedresponse}', '{feedbot}', {feed});")
-
-        connection.commit()
-        continuaricerca=False
+    if(message.text==polliceInSu or message.text==polliceInGiù): #if the message is a thumbs up or down
+        addLog(message) #add the log
         bot.send_message(message.chat.id, text="Grazie per il feedback!", reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True))
+        return 0
 
 
     response=get_response(message.text) #get the response from the type of message requested
+    type=response[1] #get the type of message
+    response=response[0] #get the response
+
     temp=message.text #save the message
 
 
@@ -427,23 +464,32 @@ def Main(client,message):
             ora=cerca_orario(temp) #search the time
 
             giorno=cerca_giorno(temp) #search the day
+
             info=prof_info(message,bot,ora,giorno) #get the info about the professor (ora and giorno can be '-1' if not found)
-            if (info == 1):
+
+            if (info == 1): #if he is free
                 bot.send_message(message.chat.id, text=f"Il prof {message.text.title()} è libero") #if he is free
                 risposta=f"Il prof {message.text.title()} è libero"
-            elif (info == 2):
+
+            elif (info == 2): #if he is not in school
                 bot.send_message(message.chat.id, text=f"Il prof oggi non c'è a scuola") #if he is not in school all time
                 risposta=f"Il prof oggi non c'è a scuola"
-            elif (info != 0):
+
+            elif (info != 0): #if he is in school
                 bot.send_message(message.chat.id,
                                  text=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}") #if he is in school
                 risposta=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}"
-            else:
-                message.text = temp #original message
-            message.text=temp
-            feedbacktry(message, response, risposta, emojiKeyboard, bot)
-        else:
-            message.text = temp #original message
+
+            message.text=temp #original message
+            feeding=feedbacktry(message, type, risposta, emojiKeyboard, bot) #ask for feedback
+            if (feeding):
+                return 0 #if the user wants to give feedback, stop the function
+
+        message.text = temp #original message
+        addLogInfo(message, type, risposta) #add the log
+        addLog(message) #add the log into db
+        return 0 #stop the function
+
 
 
     elif(response=="Puoi ripetere?" and continuaricerca):
@@ -469,27 +515,45 @@ def Main(client,message):
             cercare=False
             for i in allKeyboard: #search the professor
                 if(message.text in i[0]): cercare=True
+
             if(cercare): #if the professor is found
                 info=prof_info(message,bot,-1,-1) #get the info about the professor for today in this moment
-                if(info==1):
+
+                if(info==1): #if he is free
                     bot.send_message(message.chat.id, text=f"Il prof {message.text.title()} non è in una classe") #if he is free
                     risposta=f"Il prof {message.text.title()} non è in una classe"
-                elif (info==2):
+
+                elif (info==2): #if he is not in school
                     bot.send_message(message.chat.id, text=f"Il prof oggi non c'è a scuola") #if he is not in school all time
                     risposta=f"Il prof oggi non c'è a scuola"
-                elif(info!=0):
+
+                elif(info!=0): #if he is in school
                     bot.send_message(message.chat.id ,text=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula numero: {info[2]}") #if he is in school
                     risposta=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula numero: {info[2]}"
-            else:
+
+            else: #if the professor is not found
                 bot.send_message(message.chat.id, text="Prof non trovato, ricontrolla e manda un nuovo messaggio") #if the professor is not found
                 risposta="Prof non trovato, ricontrolla e manda un nuovo messaggio"
 
-            feedbacktry(message,response,risposta,emojiKeyboard,bot)
+            feeding = feedbacktry(message, type, risposta, emojiKeyboard, bot) #ask for feedback
+            if (feeding):
+                return 0 #if the user wants to give feedback, stop the function
+            addLogInfo(message, type, risposta) #add the log
+            addLog(message) #add the log into db
+            return 0 #stop the function
+
     else:
-        if (continuaricerca):
+        if (continuaricerca): #if the user isn't asking for a professor
             bot.send_message(message.chat.id, text=response) #send the response of type of message requested
-            feedbacktry(message, response, risposta, emojiKeyboard, bot)
+            risposta = response #save the response
+            feeding = feedbacktry(message, type, risposta, emojiKeyboard, bot) #ask for feedback
+            if (feeding):
+                return 0 #if the user wants to give feedback, stop the function
+
+            addLogInfo(message, type, risposta) #add the log
+            addLog(message) #add the log into db
+            return 0 #stop the function
 
 
 
-bot.run()
+bot.run() #run the bot

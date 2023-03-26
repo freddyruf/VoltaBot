@@ -40,6 +40,9 @@ from mysql.connector import Error
 from datetime import datetime
 import re
 
+
+risposta = ""
+
 #function to find the type of message
 def get_response(input_string):
     split_message = re.split(r'\s+|[,;?!.-]\s*', input_string.lower())
@@ -81,7 +84,10 @@ def get_response(input_string):
 
     # If there is no good response, return a random one.
     if best_response != 0:
-        return response_data[response_index]["bot_response"]
+        rt = ["", ""]
+        rt[0] = response_data[response_index]["bot_response"]
+        rt[1] = response_data[response_index]["response_type"]
+        return rt
 
     return "Puoi ripetere?"
 
@@ -113,8 +119,41 @@ tastiera3=tastiera3         #keyboards
 tastiera4=tastiera4
 allKeyboard=allKeyboard
 
+
+def addLog(message):  # function to add the log into the database
+    global cursor
+    global connection
+    global feedbot
+    global feedresponse
+    global feedmessage
+
+    now = datetime.now()
+    # Ottenere la data attuale come stringa nel formato 'YYYY-MM-DD'
+    date_str = now.strftime('%Y-%m-%d')
+
+    # Ottenere l'ora attuale come stringa nel formato 'HH:MM:SS'
+    time_str = now.strftime('%H:%M:%S')
+
+    timeinfo = date_str + " " + time_str  # time info
+
+    cursor.execute(
+        f"INSERT INTO log (tempo, usertext, requestinfo, responsetext) VALUES ('{timeinfo}', '{feedmessage}','{feedresponse}', '{feedbot}');")
+
+    connection.commit()  # commit the changes
+
+
+def addLogInfo(message, response, risposta):  # function to prepare the log into the database
+    global feedbot
+    global feedresponse
+    global feedmessage
+
+    feedmessage = message
+    feedresponse = response
+    feedbot = risposta
+
 def prof_info(msg,orario,giorno): #function to get the info about the professor
     global cursor
+    global risposta
     cursor.execute(f"SELECT ID FROM professori WHERE Nome = '{msg}'")
     PROF_ID = cursor.fetchall()  # id prof
 
@@ -138,6 +177,7 @@ def prof_info(msg,orario,giorno): #function to get the info about the professor
         Giorno = "orarioprofvenerdì"
     else:
         engine.say("Giorno sbagliato!")
+        risposta = "Giorno sbagliato!"
         engine.runAndWait()
         return 0
 
@@ -150,6 +190,7 @@ def prof_info(msg,orario,giorno): #function to get the info about the professor
     Ora -= 7              #indent for the database
     if ((Giorno != "orarioproflunedì" and Ora > 6) or Ora <= 0 or Ora > 8):  # control if the hour is correct
         engine.say("Ora sbagliata!")
+        risposta = "Ora sbagliata!"
         engine.runAndWait()
         return 0
     if (Ora == 1):
@@ -243,38 +284,38 @@ def cerca_orario(str): #function to find the hour in the string
 
             for i in string:
 
-                if (len(i) == 2 and ord(i[1]) > 47 and ord(i[1]) < 58):
+                if (len(i) == 2 and ord(i[1]) > 47 and ord(i[1]) < 58): #if the hour is in the format 00:00
                     nulla=False
                     tot = (ord(i[0]) - 48) * 10 + (ord(i[1]) - 48)
                     break
-                elif("?" in i):
+                elif("?" in i): #if the hour is in the format 0? or 0:00?
                     nulla = False
                     tot = ord(i[0]) - 48
                     break
 
-                else:
+                else: #if the hour is in the format 0
                     nulla=False
                     tot = ord(i[0]) - 48
                     break
     if(nulla): #not found
         return -1
     else:
-        return tot
+        return tot #return the hour
 
 #searching the name of the professor
 def find2(str):
-    str = re.split(' ', str.upper())
-    for c in str:
-        for i in allKeyboard:
-            for z in i:
-                if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
-                    return z
+    str = re.split(' ', str.upper()) # split the string
+    for c in str: #for each word
+        for i in allKeyboard: #for each keyboard
+            for z in i: #for each word in the keyboard
+                if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z): #if the word is in the keyboard
+                    return z #return the name
     return 0
 
 
 #searching the day
 def cerca_giorno(str):
-    str = re.split(' ', str.lower())
+    str = re.split(' ', str.lower()) # split the string
     for c in str:
         if ("luned" in c):
             return 1
@@ -310,6 +351,8 @@ while True:
             text = recognizer_instance.recognize_google(audio, language="it-IT")
 
             response = get_response(text)  # get the response from the type of message requested
+            type = response[1]  # get the type of message
+            response = response[0]  # get the response
             temp = text  # save the message
 
             if (response == "trovato"):  # asking for a professor
@@ -323,22 +366,24 @@ while True:
                     info = prof_info(text,ora,giorno)  # get the info about the professor (ora and giorno can be '-1' if not found)
                     if (info == 1):
                         engine.say(f"Il prof {text.title()} è libero")  # if he is free
+                        risposta = "Il prof è libero"
                         engine.runAndWait()
                     elif (info == 2):
                         engine.say(f"Il prof oggi non c'è a scuola")  # if he is not in school all time
+                        risposta = "Il prof oggi non c'è a scuola"
                         engine.runAndWait()
                     elif (info != 0):
                         engine.say(f"Il prof {text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}")  # if he is in school
+                        risposta = f"Il prof si trova in: Palazzina: {info[0]} Piano: {info[1]} Aula: {info[2]}"
                         engine.runAndWait()
-                    else:
-                        text = temp  # original message
-                else:
-                    text = temp  # original message
 
-
+                text = temp  # restore the message
             else:
-                engine.say(response)  # send the response of type of message requested
+                engine.say(response)  # send the response of message requested
                 engine.runAndWait()
+                risposta = response # save the response
+            addLogInfo(text, type+" *audio* ", risposta)  # add the log
+            addLog(text)  # add the log into db
         except Exception as e:
             print(e)
 

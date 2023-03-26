@@ -18,7 +18,7 @@
     "required_words": ["piacere"]
   },
   {
-    "response_type": "risultato",
+    "response_type": "ricerca",
     "user_input": ["aula", "ora", "classe", "dove", "?","trova","aula","classe","palazzina","piano","cerca","trovare","professore", "professoressa","dov","dove","dov'"],
     "bot_response": "trovato",
     "required_words": []
