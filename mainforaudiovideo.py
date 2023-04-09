@@ -345,7 +345,7 @@ while True:
 
         recognizer_instance.adjust_for_ambient_noise(source)
         print("Sono in ascolto parla pure..")
-        audio = recognizer_instance.listen(source)
+        audio = recognizer_instance.listen(source, timeout=5, phrase_time_limit=12)
         print("Messaggio in elaborazione")
         try:
             text = recognizer_instance.recognize_google(audio, language="it-IT")
