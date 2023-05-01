@@ -20,6 +20,40 @@ from pyrogram import Client
 
 bot = Client("my_account", api_id=api_id, api_hash=api_hash)
 
+import editdistance
+
+
+
+
+def similarity(string1, string2):
+    max_length = max(len(string1), len(string2))
+    if max_length == 0:
+        percent_distance = 0
+    else:
+        distance = editdistance.eval(string1, string2)
+        percent_distance = 100 * (max_length - distance) / max_length
+    return percent_distance
+def closest_substring(string, matrix):
+    words = string.split()
+    n = len(words)
+    closest = None
+    min_distance = 0
+    for i in range(n-1):
+        substring = words[i] + ' ' + words[i+1]
+        for row in matrix:
+            for element in row:
+                d = similarity(element, substring)
+                if d > min_distance and d > 70:
+                    min_distance = d
+                    closest = element
+    if closest is None:
+        for c in words: #entro nella lista di parole
+            for i in matrix: #entro nella lista di liste di tasti
+                for z in i: #entro nella lista di tasti
+                    if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
+                        return z
+    return closest
+
 def load_json(file):
     with open(file) as bot_responses:
         print(f"Loaded '{file}' successfully!")   #JSON file loaded
@@ -94,14 +128,13 @@ def get_response(input_string):
 
 # {{{ creating connection
 def create_connection(host_name, user_name, user_password):
-    connection = None
+    global connection
     try:
         connection = mysql.connector.connect(
             host=host_name,
             user=user_name,             #host values / *modify* if you not need to connect into a local host*
-            passwd="root",
 
-            database="test"  #database name / *modify*
+            database="prova"  #database name / *modify*
         )
         print("Connection to MySQL DB successful")
     except Error as e:
@@ -110,7 +143,7 @@ def create_connection(host_name, user_name, user_password):
 connection = create_connection("localhost", "root", "")
 #}}} closing the connection function
 
-cursor = connection.cursor() #cursor /Read-only attribute describing the result of a query.
+cursor = connection.cursor(buffered=True) #cursor /Read-only attribute describing the result of a query.
 
 
 tastiera=tastiera
@@ -304,13 +337,10 @@ def cerca_orario(str): #function to find the hour in the string
 
 #searching the name of the professor
 def find2(str):
-    str = re.split(' ', str.upper()) # split the string
-    for c in str: #for each word
-        for i in allKeyboard: #for each keyboard
-            for z in i: #for each word in the keyboard
-                if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z): #if the word is in the keyboard
-                    return z #return the name
-    return 0
+    name=closest_substring(str.upper(), allKeyboard)
+    if (name == None):
+        return 0
+    else: return name
 
 
 #searching the day

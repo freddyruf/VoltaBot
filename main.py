@@ -39,6 +39,42 @@ tastiera3=tastiera3         #keyboards
 tastiera4=tastiera4
 allKeyboard=allKeyboard
 
+from Levenshtein import distance
+
+import editdistance
+
+
+
+
+def similarity(string1, string2):
+    max_length = max(len(string1), len(string2))
+    if max_length == 0:
+        percent_distance = 0
+    else:
+        distance = editdistance.eval(string1, string2)
+        percent_distance = 100 * (max_length - distance) / max_length
+    return percent_distance
+def closest_substring(string, matrix):
+    words = string.split()
+    n = len(words)
+    closest = None
+    min_distance = 0
+    for i in range(n-1):
+        substring = words[i] + ' ' + words[i+1]
+        for row in matrix:
+            for element in row:
+                d = similarity(element, substring)
+                if d > min_distance and d > 70:
+                    min_distance = d
+                    closest = element
+    if closest is None:
+        for c in words: #entro nella lista di parole
+            for i in matrix: #entro nella lista di liste di tasti
+                for z in i: #entro nella lista di tasti
+                    if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
+                        return z
+    return closest
+
 def load_json(file):
     with open(file) as bot_responses:
         print(f"Loaded '{file}' successfully!")   #JSON file loaded
@@ -104,9 +140,8 @@ def create_connection(host_name, user_name, user_password):
         connection = mysql.connector.connect(
             host=host_name,
             user=user_name,             #host values / *modify* if you not need to connect into a local host*
-            passwd="root",
 
-            database="test"  #database name / *modify*
+            database="prova"  #database name / *modify*
         )
         print("Connection to MySQL DB successful")
     except Error as e:
@@ -264,7 +299,6 @@ def prof_info(msg,bot,orario,giorno): #function to get the info about the profes
 
         cursor.execute(f"SELECT sestaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'")
         sesta = cursor.fetchall()
-
         #control if the professor is free all hours
         if (prima[0][0]=="libero" and seconda[0][0]=="libero" and terza[0][0]=="libero" and quarta[0][0]=="libero" and quinta[0][0]=="libero" and sesta[0][0]=="libero"): return 2
         elif (prima[0][0]=="Libero" and seconda[0][0]=="Libero" and terza[0][0]=="Libero" and quarta[0][0]=="Libero" and quinta[0][0]=="Libero" and sesta[0][0]=="Libero"): return 2
@@ -334,13 +368,16 @@ def cerca_orario(str): #function to find the hour in the string
 
 #searching the name of the professor
 def find2(str):
-    str = re.split(' ', str.upper())
-    for c in str: #entro nella lista di parole
-        for i in allKeyboard: #entro nella lista di liste di tasti
-            for z in i: #entro nella lista di tasti
-                if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
-                    return z
-    return 0
+    name=closest_substring(str.upper(), allKeyboard)
+    # str = re.split(' ', str.upper())
+    # for c in str: #entro nella lista di parole
+    #     for i in allKeyboard: #entro nella lista di liste di tasti
+    #         for z in i: #entro nella lista di tasti
+    #             if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
+    #                 return z
+    if (name == None):
+        return 0
+    else: return name
 
 
 #searching the day
@@ -421,7 +458,6 @@ def find(client,message):
 @bot.on_message(filters.text)
 
 def Main(client,message):
-
     #thumbs up and down unicode
     global polliceInSu
     global polliceInGiù
