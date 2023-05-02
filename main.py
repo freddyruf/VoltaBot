@@ -21,6 +21,10 @@ from mysql.connector import Error
 from datetime import datetime
 import re
 
+from Levenshtein import distance
+
+import editdistance
+
 
 bot = Client("my_account", api_id=api_id, api_hash=api_hash)
 
@@ -39,41 +43,19 @@ tastiera3=tastiera3         #keyboards
 tastiera4=tastiera4
 allKeyboard=allKeyboard
 
-from Levenshtein import distance
 
-import editdistance
+MAIN_BUTTONS = [
+  ["A-C","D"],
+  ["E-O","P-Z"],
+  ["/help"]
+               ]
 
 
 
 
-def similarity(string1, string2):
-    max_length = max(len(string1), len(string2))
-    if max_length == 0:
-        percent_distance = 0
-    else:
-        distance = editdistance.eval(string1, string2)
-        percent_distance = 100 * (max_length - distance) / max_length
-    return percent_distance
-def closest_substring(string, matrix):
-    words = string.split()
-    n = len(words)
-    closest = None
-    min_distance = 0
-    for i in range(n-1):
-        substring = words[i] + ' ' + words[i+1]
-        for row in matrix:
-            for element in row:
-                d = similarity(element, substring)
-                if d > min_distance and d > 70:
-                    min_distance = d
-                    closest = element
-    if closest is None:
-        for c in words: #entro nella lista di parole
-            for i in matrix: #entro nella lista di liste di tasti
-                for z in i: #entro nella lista di tasti
-                    if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
-                        return z
-    return closest
+
+
+
 
 def load_json(file):
     with open(file) as bot_responses:
@@ -82,6 +64,29 @@ def load_json(file):
 # Store JSON data
 response_data = load_json("bot.json")
 
+
+
+
+
+# {{{ creating connection
+connection = None
+def create_connection(host_name, user_name, user_password):
+    global connection
+    try:
+        connection = mysql.connector.connect(
+            host=host_name,
+            user=user_name,             #host values / *modify* if you not need to connect into a local host*
+
+            database="docenti"  #database name / *modify*
+        )
+        print("Connection to MySQL DB successful")
+    except Error as e:
+        print(f"The error '{e}' occurred when we try to connect into db")
+    return connection
+connection = create_connection("localhost", "root", "")
+#}}} closing the connection function
+
+cursor = connection.cursor(buffered=True) #cursor /Read-only attribute describing the result of a query.
 
 #function to find the type of message
 def get_response(input_string):
@@ -130,28 +135,6 @@ def get_response(input_string):
         return rt
 
     return "Puoi ripetere?"
-
-
-# {{{ creating connection
-connection = None
-def create_connection(host_name, user_name, user_password):
-    global connection
-    try:
-        connection = mysql.connector.connect(
-            host=host_name,
-            user=user_name,             #host values / *modify* if you not need to connect into a local host*
-
-            database="prova"  #database name / *modify*
-        )
-        print("Connection to MySQL DB successful")
-    except Error as e:
-        print(f"The error '{e}' occurred when we try to connect into db")
-    return connection
-connection = create_connection("localhost", "root", "")
-#}}} closing the connection function
-
-cursor = connection.cursor(buffered=True) #cursor /Read-only attribute describing the result of a query.
-
 
 def addLog(message):  # function to add the log into the database
     global cursor
@@ -216,7 +199,34 @@ def feedbacktry(message,response,risposta,emojiKeyboard,bot): # function to not 
     else:
         return False
 
-
+def similarity(string1, string2):
+    max_length = max(len(string1), len(string2))
+    if max_length == 0:
+        percent_distance = 0
+    else:
+        distance = editdistance.eval(string1, string2)
+        percent_distance = 100 * (max_length - distance) / max_length
+    return percent_distance
+def closest_substring(string, matrix):
+    words = string.split()
+    n = len(words)
+    closest = None
+    min_distance = 0
+    for i in range(n-1):
+        substring = words[i] + ' ' + words[i+1]
+        for row in matrix:
+            for element in row:
+                d = similarity(element, substring)
+                if d > min_distance and d > 70:
+                    min_distance = d
+                    closest = element
+    if closest is None:
+        for c in words: #entro nella lista di parole
+            for i in matrix: #entro nella lista di liste di tasti
+                for z in i: #entro nella lista di tasti
+                    if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
+                        return z
+    return closest
 
 
 def prof_info(msg,bot,orario,giorno): #function to get the info about the professor
@@ -246,9 +256,9 @@ def prof_info(msg,bot,orario,giorno): #function to get the info about the profes
     else:
         risposta= "Sei nel giorno sbagliato"
         bot.send_message(msg.chat.id, text="Sei nel giorno sbagliato")
-        return 0
+        return risposta
 
-    #ciaoo
+
     if(orario == -1):
         Ora = currentDateTime.hour  # actual hour
     else:
@@ -258,7 +268,7 @@ def prof_info(msg,bot,orario,giorno): #function to get the info about the profes
     if ((Giorno != "orarioproflunedì" and Ora > 6) or Ora <= 0 or Ora > 8):  # control if the hour is correct
         risposta='Ora sbagliata!'
         bot.send_message(msg.chat.id, text="Ora sbagliata!")
-        return 0
+        return risposta
     if (Ora == 1):
         Ora = "primaOra"
     elif (Ora == 2):
@@ -369,16 +379,18 @@ def cerca_orario(str): #function to find the hour in the string
 #searching the name of the professor
 def find2(str):
     name=closest_substring(str.upper(), allKeyboard)
-    # str = re.split(' ', str.upper())
-    # for c in str: #entro nella lista di parole
-    #     for i in allKeyboard: #entro nella lista di liste di tasti
-    #         for z in i: #entro nella lista di tasti
-    #             if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
-    #                 return z
     if (name == None):
         return 0
     else: return name
 
+def findsolonome(str):
+    str = re.split(' ', str.upper())
+    for c in str: #entro nella lista di parole
+        for i in allKeyboard: #entro nella lista di liste di tasti
+            for z in i: #entro nella lista di tasti
+                if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
+                    return z
+    return 0
 
 #searching the day
 def cerca_giorno(str):
@@ -400,13 +412,60 @@ def cerca_giorno(str):
             return 7
     return -1
 
+def invia(message,type, emojiKeyboard, bot, inQuestoMomento):
+    global allKeyboard
 
 
-MAIN_BUTTONS = [
-  ["A-C","D"],
-  ["E-O","P-Z"],
-  ["/help"]
-               ]
+    original_message= message.text
+    message.text = find2(
+        message.text)  # modify the message text to the name of the professor (to work in some functions)
+
+    if (inQuestoMomento):
+        ora=-1
+        giorno=-1
+    else:
+        ora = cerca_orario(original_message)  # search the time
+        giorno = cerca_giorno(original_message)  # search the day
+
+    info = prof_info(message, bot, ora,
+                     giorno)  # get the info about the professor (ora and giorno can be '-1' if not found)
+
+    if (info == 1):  # if he is free
+        bot.send_message(message.chat.id, text=f"Il prof {message.text.title()} è libero")  # if he is free
+        risposta = f"Il prof {message.text.title()} è libero"
+
+    elif (info == 2):  # if he is not in school
+        bot.send_message(message.chat.id,
+                         text=f"Il prof oggi non c'è a scuola")  # if he is not in school all time
+        risposta = f"Il prof oggi non c'è a scuola"
+    elif (info == "Sei nel giorno sbagliato!" or info=="Ora sbagliata!"):  # if the name is not correct
+        risposta=info
+    else:  # if he is in school
+        bot.send_message(message.chat.id,
+                         text=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}")  # if he is in school
+        risposta = f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}"
+
+
+    message.text = original_message  # original message
+    feeding = feedbacktry(message, type, risposta, emojiKeyboard, bot)  # ask for feedback
+    if (feeding):
+        return 0  # if the user wants to give feedback, stop the function
+
+    message.text = original_message  # original message
+    addLogInfo(message, type, risposta)  # add the log
+    addLog(message)  # add the log into db
+
+def inviasingolo(message,response,emojiKeyboard,bot):
+    global risposta
+    bot.send_message(message.chat.id, text=response)  # send the response of type of message requested
+    risposta = response  # save the response
+    type = "Non ho capito"
+    feeding = feedbacktry(message, type, risposta, emojiKeyboard, bot)  # ask for feedback
+    if (feeding):
+        return 0  # if the user wants to give feedback, stop the function
+    addLogInfo(message, type, risposta)  # add the log
+    addLog(message)  # add the log into db
+    return 0  # stop the function
 
 
 #telegram functions
@@ -479,116 +538,56 @@ def Main(client,message):
 
     continuaricerca=True
 
+
     if(message.text==polliceInSu or message.text==polliceInGiù): #if the message is a thumbs up or down
         addLog(message) #add the log
         bot.send_message(message.chat.id, text="Grazie per il feedback!", reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True))
         return 0
 
+    if(message.text=="A-C"):
+        reply_markup=ReplyKeyboardMarkup(tastiera,one_time_keyboard=True,resize_keyboard=True)
+        message.reply(text="Button:",reply_markup=reply_markup)
+        return 0
+    if(message.text=="D"):
+        reply_markup=ReplyKeyboardMarkup(tastiera2,one_time_keyboard=True,resize_keyboard=True)
+        message.reply(text="Button:",reply_markup=reply_markup)
+        return 0
+    if(message.text=="E-O"):
+        reply_markup=ReplyKeyboardMarkup(tastiera3,one_time_keyboard=True,resize_keyboard=True)
+        message.reply(text="Button:",reply_markup=reply_markup)
+        return 0
+    if(message.text=="P-Z"):
+        reply_markup=ReplyKeyboardMarkup(tastiera4,one_time_keyboard=True,resize_keyboard=True)
+        message.reply(text="Button:",reply_markup=reply_markup)
+        return 0
+    if(message.text=="<<<---------"):
+        reply_markup = ReplyKeyboardMarkup(MAIN_BUTTONS, one_time_keyboard=True, resize_keyboard=True)
+        message.reply(text="Button:", reply_markup=reply_markup)
+        return 0
 
-    response=get_response(message.text) #get the response from the type of message requested
-    type=response[1] #get the type of message
-    response=response[0] #get the response
+    response = get_response(message.text)  # get the response from the type of message requested
+    if(isinstance(response, list)):
+        type = response[1]  # get the type of message
+        response = response[0]  # get the response
+    else: #function don't understand
+        inviasingolo(message,response,emojiKeyboard,bot)
+        return 0
 
-    temp=message.text #save the message
-
-
-    if(response=="trovato" and continuaricerca): #asking for a professor
-        message.text=find2(message.text) #modify the message text to the name of the professor (to work in some functions)
-
-        if(message.text!=0): #if the professor is found
-
-            ora=cerca_orario(temp) #search the time
-
-            giorno=cerca_giorno(temp) #search the day
-
-            info=prof_info(message,bot,ora,giorno) #get the info about the professor (ora and giorno can be '-1' if not found)
-
-            if (info == 1): #if he is free
-                bot.send_message(message.chat.id, text=f"Il prof {message.text.title()} è libero") #if he is free
-                risposta=f"Il prof {message.text.title()} è libero"
-
-            elif (info == 2): #if he is not in school
-                bot.send_message(message.chat.id, text=f"Il prof oggi non c'è a scuola") #if he is not in school all time
-                risposta=f"Il prof oggi non c'è a scuola"
-
-            elif (info != 0): #if he is in school
-                bot.send_message(message.chat.id,
-                                 text=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}") #if he is in school
-                risposta=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}"
-
-            message.text=temp #original message
-            feeding=feedbacktry(message, type, risposta, emojiKeyboard, bot) #ask for feedback
-            if (feeding):
-                return 0 #if the user wants to give feedback, stop the function
-
-        message.text = temp #original message
-        addLogInfo(message, type, risposta) #add the log
-        addLog(message) #add the log into db
-        return 0 #stop the function
+    daibottoni = findsolonome(message.text)
+    if(daibottoni!=0):
+        invia(message,type,emojiKeyboard,bot, False)
+        return 0
 
 
-
-    elif(response=="Puoi ripetere?" and continuaricerca):
-        tastieraPrima=ReplyKeyboardMarkup(tastiera,one_time_keyboard=True,resize_keyboard=True)
-        tastieraSeconda=ReplyKeyboardMarkup(tastiera2,one_time_keyboard=True,resize_keyboard=True) #set the keyboards
-        tastieraTerza=ReplyKeyboardMarkup(tastiera3,one_time_keyboard=True,resize_keyboard=True)
-        tastieraQuarta=ReplyKeyboardMarkup(tastiera4,one_time_keyboard=True,resize_keyboard=True)
-        reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True)
-
-
-        if(message.text=="A-C"): #if the user choose a keyboard
-          message.reply(text="Dimmi un nome:",reply_markup=tastieraPrima)
-        elif(message.text=="D"):
-          message.reply(text="Dimmi un nome:",reply_markup=tastieraSeconda)
-        elif(message.text=="E-O"):
-          message.reply(text="Dimmi un nome:",reply_markup=tastieraTerza)
-        elif(message.text=="P-Z"):
-          message.reply(text="Dimmi un nome:",reply_markup=tastieraQuarta)
-        elif(message.text=="<<<---------"):
-          message.reply(text="Indietro:",reply_markup=reply_markup)
-
-        else:
-            cercare=False
-            for i in allKeyboard: #search the professor
-                if(message.text in i[0]): cercare=True
-
-            if(cercare): #if the professor is found
-                info=prof_info(message,bot,-1,-1) #get the info about the professor for today in this moment
-
-                if(info==1): #if he is free
-                    bot.send_message(message.chat.id, text=f"Il prof {message.text.title()} non è in una classe") #if he is free
-                    risposta=f"Il prof {message.text.title()} non è in una classe"
-
-                elif (info==2): #if he is not in school
-                    bot.send_message(message.chat.id, text=f"Il prof oggi non c'è a scuola") #if he is not in school all time
-                    risposta=f"Il prof oggi non c'è a scuola"
-
-                elif(info!=0): #if he is in school
-                    bot.send_message(message.chat.id ,text=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula numero: {info[2]}") #if he is in school
-                    risposta=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula numero: {info[2]}"
-
-            else: #if the professor is not found
-                bot.send_message(message.chat.id, text="Prof non trovato, ricontrolla e manda un nuovo messaggio") #if the professor is not found
-                risposta="Prof non trovato, ricontrolla e manda un nuovo messaggio"
-
-            feeding = feedbacktry(message, type, risposta, emojiKeyboard, bot) #ask for feedback
-            if (feeding):
-                return 0 #if the user wants to give feedback, stop the function
-            addLogInfo(message, type, risposta) #add the log
-            addLog(message) #add the log into db
-            return 0 #stop the function
-
+    if(response=="trovato"): #asking for a professor
+        invia(message,type,emojiKeyboard,bot, False)
+        return 0
     else:
-        if (continuaricerca): #if the user isn't asking for a professor
-            bot.send_message(message.chat.id, text=response) #send the response of type of message requested
-            risposta = response #save the response
-            feeding = feedbacktry(message, type, risposta, emojiKeyboard, bot) #ask for feedback
-            if (feeding):
-                return 0 #if the user wants to give feedback, stop the function
+        inviasingolo(message, response, emojiKeyboard, bot)
 
-            addLogInfo(message, type, risposta) #add the log
-            addLog(message) #add the log into db
-            return 0 #stop the function
+
+
+
 
 
 
