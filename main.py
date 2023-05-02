@@ -1,5 +1,3 @@
-import json
-import re
 from pyrogram import filters
 from dettails import api_hash 
 from dettails import api_id
@@ -10,10 +8,9 @@ from keyboards import tastiera3
 from keyboards import tastiera4
 from keyboards import allKeyboard
 
-import tgcrypto
 import random
-import time
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
+
+from pyrogram.types import ReplyKeyboardMarkup
 from pyrogram import Client
 
 import mysql.connector
@@ -21,7 +18,8 @@ from mysql.connector import Error
 from datetime import datetime
 import re
 
-from Levenshtein import distance
+import json
+
 
 import editdistance
 
@@ -43,17 +41,17 @@ tastiera3=tastiera3         #keyboards
 tastiera4=tastiera4
 allKeyboard=allKeyboard
 
+emojiKey=[[polliceInSu,polliceInGiù]]
+emojiKeyboard = ReplyKeyboardMarkup(emojiKey, one_time_keyboard=True, resize_keyboard=True)
+
+
+
 
 MAIN_BUTTONS = [
   ["A-C","D"],
   ["E-O","P-Z"],
   ["/help"]
                ]
-
-
-
-
-
 
 
 
@@ -134,14 +132,11 @@ def get_response(input_string):
         rt[1] = response_data[response_index]["response_type"]
         return rt
 
-    return "Puoi ripetere?"
+    return ["Puoi ripetere?","errore"]
 
 def addLog(message):  # function to add the log into the database
     global cursor
     global connection
-    global feedbot
-    global feedresponse
-    global feedmessage
 
 
     now = datetime.now()
@@ -180,13 +175,10 @@ def addLogInfo(message,response, risposta): # function to prepare the log into t
     feedbot = risposta
 
 
-def feedbacktry(message,response,risposta,emojiKeyboard,bot): # function to not always ask the user if he wants to give a feedback
+def feedbacktry(message,response,risposta): # function to not always ask the user if he wants to give a feedback
     global feedmessage
     global feedresponse
     global feedbot
-
-    global polliceInSu
-    global polliceInGiù
 
 
     if (random.randint(1, 5) == 1): # 1/5 chance to ask the user if he wants to give a feedback
@@ -229,7 +221,7 @@ def closest_substring(string, matrix):
     return closest
 
 
-def prof_info(msg,bot,orario,giorno): #function to get the info about the professor
+def prof_info(msg,orario,giorno): #function to get the info about the professor
     global risposta
     global cursor
     cursor.execute(f"SELECT ID FROM professori WHERE Nome = '{msg.text}'")
@@ -390,7 +382,7 @@ def findsolonome(str):
             for z in i: #entro nella lista di tasti
                 if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
                     return z
-    return 0
+    return False
 
 #searching the day
 def cerca_giorno(str):
@@ -412,10 +404,7 @@ def cerca_giorno(str):
             return 7
     return -1
 
-def invia(message,type, emojiKeyboard, bot, inQuestoMomento):
-    global allKeyboard
-
-
+def invia(message,type,inQuestoMomento):
     original_message= message.text
     message.text = find2(
         message.text)  # modify the message text to the name of the professor (to work in some functions)
@@ -427,7 +416,7 @@ def invia(message,type, emojiKeyboard, bot, inQuestoMomento):
         ora = cerca_orario(original_message)  # search the time
         giorno = cerca_giorno(original_message)  # search the day
 
-    info = prof_info(message, bot, ora,
+    info = prof_info(message, ora,
                      giorno)  # get the info about the professor (ora and giorno can be '-1' if not found)
 
     if (info == 1):  # if he is free
@@ -447,7 +436,7 @@ def invia(message,type, emojiKeyboard, bot, inQuestoMomento):
 
 
     message.text = original_message  # original message
-    feeding = feedbacktry(message, type, risposta, emojiKeyboard, bot)  # ask for feedback
+    feeding = feedbacktry(message, type, risposta)  # ask for feedback
     if (feeding):
         return 0  # if the user wants to give feedback, stop the function
 
@@ -455,12 +444,12 @@ def invia(message,type, emojiKeyboard, bot, inQuestoMomento):
     addLogInfo(message, type, risposta)  # add the log
     addLog(message)  # add the log into db
 
-def inviasingolo(message,response,emojiKeyboard,bot):
+def inviasingolo(message,response):
     global risposta
     bot.send_message(message.chat.id, text=response)  # send the response of type of message requested
     risposta = response  # save the response
     type = "Non ho capito"
-    feeding = feedbacktry(message, type, risposta, emojiKeyboard, bot)  # ask for feedback
+    feeding = feedbacktry(message, type, risposta)  # ask for feedback
     if (feeding):
         return 0  # if the user wants to give feedback, stop the function
     addLogInfo(message, type, risposta)  # add the log
@@ -472,13 +461,11 @@ def inviasingolo(message,response,emojiKeyboard,bot):
 
 @bot.on_message(filters.command(commands=['start']))   #start
 def start(client,message):
-    global MAIN_BUTTONS
     reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True)
     message.reply(text="Benvenuto! Usa questo bot per scoprire dove si trova un professore, per ogni aiuto usa /help, avrai anche una lista di comandi", reply_markup=reply_markup)
 
 @bot.on_message(filters.command(commands=['help']))
 def help(client,message):
-    global MAIN_BUTTONS
     reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True)
     message.reply(text="Comandi:\n \n/start - Il bot inizia, puoi usarlo per far apparire i pulsanti \n/find - cerca un professore \n/help - info e lista comandi \n/clear - per resettare la chat \n \nPer aiuto o feedback scrivi al numero: \n +39 3924502802 \n ", reply_markup=reply_markup)
 
@@ -489,7 +476,6 @@ def easteregg(client,message):
 
 @bot.on_message(filters.command(commands=['find'])) #find a proffesor
 def find(client,message):
-  global allKeyboard
   newKeyboard=[]
   for c in range(0,len(allKeyboard)):
     newKeyboard.append([""])
@@ -517,77 +503,47 @@ def find(client,message):
 @bot.on_message(filters.text)
 
 def Main(client,message):
-    #thumbs up and down unicode
-    global polliceInSu
-    global polliceInGiù
-    emojiKey=[[polliceInSu,polliceInGiù]]
-    emojiKeyboard = ReplyKeyboardMarkup(emojiKey, one_time_keyboard=True, resize_keyboard=True)
-
-    global MAIN_BUTTONS
-    global tastiera
-    global tastiera2
-    global tastiera3
-    global tastiera4
-    global allKeyboard
-
-    global feedbot
-    global feedresponse
-    global feedmessage
-
-    global risposta
-
-    continuaricerca=True
 
 
-    if(message.text==polliceInSu or message.text==polliceInGiù): #if the message is a thumbs up or down
+    if(message.text==polliceInSu or message.text==polliceInGiù): #if the message is a thumbs up or down, so if the user give a feedback
         addLog(message) #add the log
         bot.send_message(message.chat.id, text="Grazie per il feedback!", reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True))
-        return 0
 
-    if(message.text=="A-C"):
+    elif(message.text=="A-C"):
         reply_markup=ReplyKeyboardMarkup(tastiera,one_time_keyboard=True,resize_keyboard=True)
         message.reply(text="Button:",reply_markup=reply_markup)
-        return 0
-    if(message.text=="D"):
+
+    elif(message.text=="D"):
         reply_markup=ReplyKeyboardMarkup(tastiera2,one_time_keyboard=True,resize_keyboard=True)
         message.reply(text="Button:",reply_markup=reply_markup)
-        return 0
-    if(message.text=="E-O"):
+
+    elif(message.text=="E-O"):
         reply_markup=ReplyKeyboardMarkup(tastiera3,one_time_keyboard=True,resize_keyboard=True)
         message.reply(text="Button:",reply_markup=reply_markup)
-        return 0
-    if(message.text=="P-Z"):
+
+    elif(message.text=="P-Z"):
         reply_markup=ReplyKeyboardMarkup(tastiera4,one_time_keyboard=True,resize_keyboard=True)
         message.reply(text="Button:",reply_markup=reply_markup)
-        return 0
-    if(message.text=="<<<---------"):
+
+    elif(message.text=="<<<---------"):
         reply_markup = ReplyKeyboardMarkup(MAIN_BUTTONS, one_time_keyboard=True, resize_keyboard=True)
         message.reply(text="Button:", reply_markup=reply_markup)
-        return 0
 
-    response = get_response(message.text)  # get the response from the type of message requested
-    if(isinstance(response, list)):
+    else:
+        response = get_response(message.text)  # get the response from the type of message requested
+
         type = response[1]  # get the type of message
         response = response[0]  # get the response
-    else: #function don't understand
-        inviasingolo(message,response,emojiKeyboard,bot)
-        return 0
 
-    daibottoni = findsolonome(message.text)
-    if(daibottoni!=0):
-        invia(message,type,emojiKeyboard,bot, False)
-        return 0
+        daibottoni = findsolonome(message.text)
+        if(daibottoni):
+            invia(message,type, True)
 
+        elif(response=="trovato"): #asking for a professor
+            invia(message,type, False)
 
-    if(response=="trovato"): #asking for a professor
-        invia(message,type,emojiKeyboard,bot, False)
-        return 0
-    else:
-        inviasingolo(message, response, emojiKeyboard, bot)
-
-
-
-
+        else:
+            inviasingolo(message, response)
 
 
 
