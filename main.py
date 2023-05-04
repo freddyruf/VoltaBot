@@ -2,12 +2,6 @@ from pyrogram import filters
 from dettails import api_hash 
 from dettails import api_id
 
-from keyboards import tastiera
-from keyboards import tastiera2
-from keyboards import tastiera3
-from keyboards import tastiera4
-from keyboards import allKeyboard
-
 import random
 
 from pyrogram.types import ReplyKeyboardMarkup
@@ -34,12 +28,12 @@ polliceInSu='\U0001F44D'
 polliceInGiù='\U0001F44E'
 risposta= ""
 
-
-tastiera=tastiera
-tastiera2=tastiera2
-tastiera3=tastiera3         #keyboards
-tastiera4=tastiera4
-allKeyboard=allKeyboard
+tastiera1=[["<<<---------"]]
+tastiera=[["<<<---------"]]
+tastiera2=[["<<<---------"]]
+tastiera3=[["<<<---------"]]        #keyboards
+tastiera4=[["<<<---------"]]
+allKeyboard=[]
 
 emojiKey=[[polliceInSu,polliceInGiù]]
 emojiKeyboard = ReplyKeyboardMarkup(emojiKey, one_time_keyboard=True, resize_keyboard=True)
@@ -85,6 +79,40 @@ connection = create_connection("localhost", "root", "")
 #}}} closing the connection function
 
 cursor = connection.cursor(buffered=True) #cursor /Read-only attribute describing the result of a query.
+def keyboardsgen():
+    global tastiera1
+    global tastiera2
+    global tastiera3
+    global tastiera4
+    global allKeyboard
+    cursor.execute("SELECT Nome FROM professori")
+    cnt=0
+    allKeyboard0 = cursor.fetchall()
+    allKeyboard1=[]
+    for element in allKeyboard0:
+        string=str(element)
+        allKeyboard1.append(string.removeprefix("('").removesuffix("',)"))
+    for element in allKeyboard1:
+        allKeyboard.append([element])
+
+    fineUno = allKeyboard.index(["D`ALESSANDRO AURA"])
+    fineDue = allKeyboard.index(["EVANGELISTA FILIPPO"])
+    fineTre = allKeyboard.index(["PAGLIARA DANIELA"])
+    fineQuattro = allKeyboard.index(["ZENONI CRISTINA"])+1
+    for i in range(0, fineUno):
+        tastiera1.append(allKeyboard[i])
+    for i in range(fineUno+1, fineDue):
+        tastiera2.append(allKeyboard[i])
+    for i in range(fineDue+1, fineTre):
+        tastiera3.append(allKeyboard[i])
+    for i in range(fineTre+1, fineQuattro):
+        tastiera4.append(allKeyboard[i])
+    print(tastiera1)
+    print(tastiera2)
+    print(tastiera3)
+    print(tastiera4)
+
+keyboardsgen()
 
 #function to find the type of message
 def get_response(input_string):
@@ -377,6 +405,8 @@ def find2(str):
 
 def findsolonome(str):
     str = re.split(' ', str.upper())
+    if len(str)>3:
+        return False
     for c in str: #entro nella lista di parole
         for i in allKeyboard: #entro nella lista di liste di tasti
             for z in i: #entro nella lista di tasti
@@ -537,11 +567,10 @@ def Main(client,message):
 
         daibottoni = findsolonome(message.text)
         if(daibottoni):
+            print(daibottoni)
             invia(message,type, True)
-
         elif(response=="trovato"): #asking for a professor
             invia(message,type, False)
-
         else:
             inviasingolo(message, response)
 
