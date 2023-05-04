@@ -58,8 +58,6 @@ response_data = load_json("bot.json")
 
 
 
-
-
 # {{{ creating connection
 connection = None
 def create_connection(host_name, user_name, user_password):
@@ -101,16 +99,12 @@ def keyboardsgen():
     fineQuattro = allKeyboard.index(["ZENONI CRISTINA"])+1
     for i in range(0, fineUno):
         tastiera1.append(allKeyboard[i])
-    for i in range(fineUno+1, fineDue):
+    for i in range(fineUno, fineDue):
         tastiera2.append(allKeyboard[i])
-    for i in range(fineDue+1, fineTre):
+    for i in range(fineDue, fineTre):
         tastiera3.append(allKeyboard[i])
-    for i in range(fineTre+1, fineQuattro):
+    for i in range(fineTre, fineQuattro):
         tastiera4.append(allKeyboard[i])
-    print(tastiera1)
-    print(tastiera2)
-    print(tastiera3)
-    print(tastiera4)
 
 keyboardsgen()
 
@@ -540,7 +534,7 @@ def Main(client,message):
         bot.send_message(message.chat.id, text="Grazie per il feedback!", reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True))
 
     elif(message.text=="A-C"):
-        reply_markup=ReplyKeyboardMarkup(tastiera,one_time_keyboard=True,resize_keyboard=True)
+        reply_markup=ReplyKeyboardMarkup(tastiera1,one_time_keyboard=True,resize_keyboard=True)
         message.reply(text="Button:",reply_markup=reply_markup)
 
     elif(message.text=="D"):
