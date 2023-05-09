@@ -1,24 +1,46 @@
+
+
+
+
+"""
+
+Info:
+    When appare message, response and risposta they mean:
+        - message: the message that the user send
+        - response: the type of the message that the user sand
+        - risposta: the response that the bot send to the user
+
+Authors:
+    - Ruffini Federico
+    - De Amicis Andrea
+Project:
+    - NAO Challenge 2023
+Place:
+    - I.I.S. A. Volta Pescara
+Repository:
+    - https://github.com/freddyruf/VoltaBot
+
+"""
+
+
+
+
 from pyrogram import filters
-from dettails import api_hash 
-from dettails import api_id
-
 import random
-
 from pyrogram.types import ReplyKeyboardMarkup
 from pyrogram import Client
-
 import mysql.connector
 from mysql.connector import Error
 from datetime import datetime
 import re
-
 import json
-
-
 import editdistance
 
 
-bot = Client("my_account", api_id=api_id, api_hash=api_hash)
+
+
+bot = Client("my_account", api_id=2002222, api_hash="347b5540bacc6fd007d605760f82a72f") #entering api info
+
 
 feedmessage=""
 feedresponse=""
@@ -28,30 +50,33 @@ polliceInSu='\U0001F44D'
 polliceInGiù='\U0001F44E'
 risposta= ""
 
+
+
 tastiera1=[["<<<---------"]]
-tastiera=[["<<<---------"]]
+tastiera=[["<<<---------"]]        #keyboards for the *from button input*
 tastiera2=[["<<<---------"]]
-tastiera3=[["<<<---------"]]        #keyboards
+tastiera3=[["<<<---------"]]       #with "<<<---------" the user will be able to go back to the main menu
 tastiera4=[["<<<---------"]]
 allKeyboard=[]
 
+#keyboard with emoji for the feedback
 emojiKey=[[polliceInSu,polliceInGiù]]
-emojiKeyboard = ReplyKeyboardMarkup(emojiKey, one_time_keyboard=True, resize_keyboard=True)
+emojiKeyboard = ReplyKeyboardMarkup(emojiKey, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
 
 
-
-
-MAIN_BUTTONS = [
+MAIN_BUTTONS = [  #main menu keyboard
   ["A-C","D"],
   ["E-O","P-Z"],
   ["/help"]
                ]
+MAIN_BUTTONS = ReplyKeyboardMarkup(MAIN_BUTTONS, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
 
 
 
+#entering into jeson file for the fuction that search argument from a phrase
 def load_json(file):
     with open(file) as bot_responses:
-        print(f"Loaded '{file}' successfully!")   #JSON file loaded
+        print(f"Loaded '{file}' successfully!")
         return json.load(bot_responses)
 # Store JSON data
 response_data = load_json("bot.json")
@@ -83,6 +108,8 @@ def keyboardsgen():
     global tastiera3
     global tastiera4
     global allKeyboard
+
+
     cursor.execute("SELECT Nome FROM professori")
     cnt=0
     allKeyboard0 = cursor.fetchall()
@@ -91,20 +118,26 @@ def keyboardsgen():
         string=str(element)
         allKeyboard1.append(string.removeprefix("('").removesuffix("',)"))
     for element in allKeyboard1:
-        allKeyboard.append([element])
+        allKeyboard.append(element)
 
-    fineUno = allKeyboard.index(["D`ALESSANDRO AURA"])
-    fineDue = allKeyboard.index(["EVANGELISTA FILIPPO"])
-    fineTre = allKeyboard.index(["PAGLIARA DANIELA"])
-    fineQuattro = allKeyboard.index(["ZENONI CRISTINA"])+1
+    fineUno = allKeyboard.index("D`ALESSANDRO AURA")
+    fineDue = allKeyboard.index("EVANGELISTA FILIPPO")
+    fineTre = allKeyboard.index("PAGLIARA DANIELA")
+    fineQuattro = allKeyboard.index("ZENONI CRISTINA")+1
+
     for i in range(0, fineUno):
-        tastiera1.append(allKeyboard[i])
+        tastiera1.append([allKeyboard[i]]) # [ ] beacous it need to be a (1,len) matrix
     for i in range(fineUno, fineDue):
-        tastiera2.append(allKeyboard[i])
+        tastiera2.append([allKeyboard[i]])
     for i in range(fineDue, fineTre):
-        tastiera3.append(allKeyboard[i])
+        tastiera3.append([allKeyboard[i]])
     for i in range(fineTre, fineQuattro):
-        tastiera4.append(allKeyboard[i])
+        tastiera4.append([allKeyboard[i]])
+
+    tastiera1=ReplyKeyboardMarkup(tastiera1, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
+    tastiera2 = ReplyKeyboardMarkup(tastiera2, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
+    tastiera3 = ReplyKeyboardMarkup(tastiera3, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
+    tastiera4 = ReplyKeyboardMarkup(tastiera4, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
 
 keyboardsgen()
 
@@ -127,17 +160,14 @@ def get_response(input_string):
 
         # Amount of required words should match the required score
         if required_score == len(required_words):
-            # print(required_score == len(required_words))
             # Check each word the user has typed
             for word in split_message:
                 # If the word is in the response, add to the score
                 if word in response["user_input"]:
                     response_score += 1
-
         # Add score to list
         score_list.append(response_score)
         # Debugging: Find the best phrase
-        # print(response_score, response["user_input"])
 
     # Find the best response and return it if they're not all 0
     best_response = max(score_list)
@@ -147,28 +177,30 @@ def get_response(input_string):
     if input_string == "":
         return -1
 
-    # If there is no good response, return a random one.
+
     if best_response != 0:
         rt=["",""]
-        rt[0] = response_data[response_index]["bot_response"]
-        rt[1] = response_data[response_index]["response_type"]
+        rt[0] = response_data[response_index]["bot_response"] #return the response
+        rt[1] = response_data[response_index]["response_type"] #return the type of response
         return rt
+    else:
+        # If there is no good response, return errore
+        return ["Puoi ripetere?","errore"]
+    #we need both the response and the type for some function when the message for the user is bot_response
 
-    return ["Puoi ripetere?","errore"]
-
-def addLog(message):  # function to add the log into the database
+def addLog(message):  # function to add the log element into the database
     global cursor
     global connection
 
 
     now = datetime.now()
-    # Ottenere la data attuale come stringa nel formato 'YYYY-MM-DD'
+    # Obtain actual date with format 'YYYY-MM-DD'
     date_str = now.strftime('%Y-%m-%d')
 
-    # Ottenere l'ora attuale come stringa nel formato 'HH:MM:SS'
+    # Obtain actual hours with format 'HH:MM:SS'
     time_str = now.strftime('%H:%M:%S')
 
-    timeinfo = date_str + " " + time_str # time info
+    timeinfo = date_str + " " + time_str # setup time for SQL datetime syntax
 
     if (message.text == polliceInSu): # if the user give a feedback
         feed = 1
@@ -187,7 +219,7 @@ def addLog(message):  # function to add the log into the database
 
     connection.commit() # commit the changes
 
-def addLogInfo(message,response, risposta): # function to prepare the log into the database
+def addLogInfo(message,response, risposta): # function to prepare the log element into the database (not sanding)
     global feedbot
     global feedresponse
     global feedmessage
@@ -206,40 +238,45 @@ def feedbacktry(message,response,risposta): # function to not always ask the use
     if (random.randint(1, 5) == 1): # 1/5 chance to ask the user if he wants to give a feedback
         bot.send_message(message.chat.id, text="Potresti darci un feedback? " + polliceInSu + " o " + polliceInGiù,
                          reply_markup=emojiKeyboard)  # ask the user what he wants to do
-        feedmessage = message.text # save the message
+        # save the message info
+        feedmessage = message.text
         feedresponse = response
         feedbot = risposta
         return True
     else:
         return False
 
-def similarity(string1, string2):
-    max_length = max(len(string1), len(string2))
-    if max_length == 0:
-        percent_distance = 0
-    else:
-        distance = editdistance.eval(string1, string2)
-        percent_distance = 100 * (max_length - distance) / max_length
+def similarity(string1, string2): # function to calculate the similarity between two strings
+    max_length = max(len(string1), len(string2)) # calculate the max length between the two strings
+
+    if max_length == 0: # if the max length is 0
+        percent_distance = 0 # the distance is 0
+
+    else: # if the max length is not 0
+        distance = editdistance.eval(string1, string2) # calculate the distance between the two strings
+        percent_distance = 100 * (max_length - distance) / max_length # convert into %
     return percent_distance
-def closest_substring(string, matrix):
-    words = string.split()
+
+def closest_substring(string, list):
+    words = string.split() #divide the string into a list of words
     n = len(words)
     closest = None
-    min_distance = 0
-    for i in range(n-1):
-        substring = words[i] + ' ' + words[i+1]
-        for row in matrix:
-            for element in row:
-                d = similarity(element, substring)
-                if d > min_distance and d > 70:
-                    min_distance = d
-                    closest = element
+    min_distance = 0 #minimum distance that bot have found
+
+    for i in range(n-1): #for each word in the list
+        substring = words[i] + ' ' + words[i+1] #take the word and the next one
+
+        for element in list: #for each row in the list
+            d = similarity(element, substring)
+            if d > min_distance and d > 70:
+                min_distance = d
+                closest = element
+
     if closest is None:
-        for c in words: #entro nella lista di parole
-            for i in matrix: #entro nella lista di liste di tasti
-                for z in i: #entro nella lista di tasti
-                    if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
-                        return z
+        for c in words: #for evry word in the list
+            for element in list: #for each element in the list
+                    if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in element):
+                        return element
     return closest
 
 
@@ -403,9 +440,8 @@ def findsolonome(str):
         return False
     for c in str: #entro nella lista di parole
         for i in allKeyboard: #entro nella lista di liste di tasti
-            for z in i: #entro nella lista di tasti
-                if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in z):
-                    return z
+            if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in i):
+                return i
     return False
 
 #searching the day
@@ -468,11 +504,11 @@ def invia(message,type,inQuestoMomento):
     addLogInfo(message, type, risposta)  # add the log
     addLog(message)  # add the log into db
 
-def inviasingolo(message,response):
+def inviasingolo(message,type,response):
     global risposta
     bot.send_message(message.chat.id, text=response)  # send the response of type of message requested
     risposta = response  # save the response
-    type = "Non ho capito"
+
     feeding = feedbacktry(message, type, risposta)  # ask for feedback
     if (feeding):
         return 0  # if the user wants to give feedback, stop the function
@@ -485,13 +521,11 @@ def inviasingolo(message,response):
 
 @bot.on_message(filters.command(commands=['start']))   #start
 def start(client,message):
-    reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True)
-    message.reply(text="Benvenuto! Usa questo bot per scoprire dove si trova un professore, per ogni aiuto usa /help, avrai anche una lista di comandi", reply_markup=reply_markup)
+    message.reply(text="Benvenuto! Usa questo bot per scoprire dove si trova un professore, per ogni aiuto usa /help, avrai anche una lista di comandi", reply_markup=MAIN_BUTTONS)
 
 @bot.on_message(filters.command(commands=['help']))
 def help(client,message):
-    reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True)
-    message.reply(text="Comandi:\n \n/start - Il bot inizia, puoi usarlo per far apparire i pulsanti \n/find - cerca un professore \n/help - info e lista comandi \n/clear - per resettare la chat \n \nPer aiuto o feedback scrivi al numero: \n +39 3924502802 \n ", reply_markup=reply_markup)
+    message.reply(text="Comandi:\n \n/start - Il bot inizia, puoi usarlo per far apparire i pulsanti \n/find - cerca un professore \n/help - info e lista comandi \n/clear - per resettare la chat \n \nPer aiuto o feedback scrivi al numero: \n +39 3924502802 \n ", reply_markup=MAIN_BUTTONS)
 
 
 @bot.on_message(filters.command(commands=['clear'])) #???
@@ -500,27 +534,27 @@ def easteregg(client,message):
 
 @bot.on_message(filters.command(commands=['find'])) #find a proffesor
 def find(client,message):
-  newKeyboard=[]
-  for c in range(0,len(allKeyboard)):
-    newKeyboard.append([""])
+    newKeyboard=[]
+    for c in range(0,len(allKeyboard)):
+        newKeyboard.append([""])
 
-  trovato=False
-  cnt=0
-  text=message.text
-  text=re.sub("/find ", "", text) #remove /find
-  text=text.upper()
-  for i in range(0,len(allKeyboard)):
-    if (text in allKeyboard[i][0]):
-      trovato=True
-      newKeyboard[cnt][0]=allKeyboard[i][0]
-      cnt+=1
-  if trovato:
-    reply_markup=ReplyKeyboardMarkup(newKeyboard,one_time_keyboard=True,resize_keyboard=True)
-    message.reply(text="Habbiamo trovato questi risultati, sceglierne uno:",reply_markup=reply_markup)
-  else:
-    global MAIN_BUTTONS
-    reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True)
-    message.reply(text="Non ho trovato nulla :_( ",reply_markup=reply_markup)
+    trovato=False
+    cnt=0
+    text=message.text
+    text=re.sub("/find ", "", text) #remove /find
+    text=text.upper()
+    for i in range(0,len(allKeyboard)):
+        if (text in allKeyboard[i]):
+            trovato=True
+            newKeyboard[cnt][0]=allKeyboard[i]
+            cnt+=1
+    if trovato:
+        reply_markup=ReplyKeyboardMarkup(newKeyboard,one_time_keyboard=True,resize_keyboard=True)
+        message.reply(text="Habbiamo trovato questi risultati, sceglierne uno:",reply_markup=reply_markup)
+    else:
+        global MAIN_BUTTONS
+        reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True)
+        message.reply(text="Non ho trovato nulla :_( ",reply_markup=reply_markup)
   
       
 
@@ -531,27 +565,22 @@ def Main(client,message):
 
     if(message.text==polliceInSu or message.text==polliceInGiù): #if the message is a thumbs up or down, so if the user give a feedback
         addLog(message) #add the log
-        bot.send_message(message.chat.id, text="Grazie per il feedback!", reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True))
+        bot.send_message(message.chat.id, text="Grazie per il feedback!", reply_markup=MAIN_BUTTONS)
 
     elif(message.text=="A-C"):
-        reply_markup=ReplyKeyboardMarkup(tastiera1,one_time_keyboard=True,resize_keyboard=True)
-        message.reply(text="Button:",reply_markup=reply_markup)
+        message.reply(text="Button:",reply_markup=tastiera1)
 
     elif(message.text=="D"):
-        reply_markup=ReplyKeyboardMarkup(tastiera2,one_time_keyboard=True,resize_keyboard=True)
-        message.reply(text="Button:",reply_markup=reply_markup)
+        message.reply(text="Button:",reply_markup=tastiera2)
 
     elif(message.text=="E-O"):
-        reply_markup=ReplyKeyboardMarkup(tastiera3,one_time_keyboard=True,resize_keyboard=True)
-        message.reply(text="Button:",reply_markup=reply_markup)
+        message.reply(text="Button:",reply_markup=tastiera3)
 
     elif(message.text=="P-Z"):
-        reply_markup=ReplyKeyboardMarkup(tastiera4,one_time_keyboard=True,resize_keyboard=True)
-        message.reply(text="Button:",reply_markup=reply_markup)
+        message.reply(text="Button:",reply_markup=tastiera4)
 
     elif(message.text=="<<<---------"):
-        reply_markup = ReplyKeyboardMarkup(MAIN_BUTTONS, one_time_keyboard=True, resize_keyboard=True)
-        message.reply(text="Button:", reply_markup=reply_markup)
+        message.reply(text="Button:", reply_markup=MAIN_BUTTONS)
 
     else:
         response = get_response(message.text)  # get the response from the type of message requested
@@ -560,13 +589,12 @@ def Main(client,message):
         response = response[0]  # get the response
 
         daibottoni = findsolonome(message.text)
-        if(daibottoni):
-            print(daibottoni)
+        if(daibottoni): #if the message is only a name (True means that the date and time is when message is sent)
             invia(message,type, True)
-        elif(response=="trovato"): #asking for a professor
+        elif(response=="ricerca professore"): #if the message is for searching a professor (False means that the date and time is specified in the message)
             invia(message,type, False)
-        else:
-            inviasingolo(message, response)
+        else: #if the message else
+            inviasingolo(message,type, response)
 
 
 
