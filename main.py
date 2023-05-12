@@ -5,10 +5,12 @@
 """
 
 Info:
-    When appare message, response and risposta they mean:
-        - message: the message that the user send
-        - response: the type of the message that the user sand
-        - risposta: the response that the bot send to the user
+    Dictionary:
+        - message: the message that the user send (pyrogram object)
+        - response: one return of the get_response function, specify the message that would be sent
+         to the user (exept in some case like searching a professor where the result for the user will be different)
+        - type: one return of the get_response function, specify the type of the message
+        - output: the response that the bot send to the user
 
 Authors:
     - Ruffini Federico
@@ -48,7 +50,7 @@ feedbot=""
 
 polliceInSu='\U0001F44D'
 polliceInGiù='\U0001F44E'
-risposta= ""
+output= ""
 
 
 
@@ -110,23 +112,26 @@ def keyboardsgen():
     global allKeyboard
 
 
-    cursor.execute("SELECT Nome FROM professori")
+    cursor.execute("SELECT Nome FROM professori") #select all the name from the table
     cnt=0
     allKeyboard0 = cursor.fetchall()
-    allKeyboard1=[]
-    for element in allKeyboard0:
-        string=str(element)
-        allKeyboard1.append(string.removeprefix("('").removesuffix("',)"))
-    for element in allKeyboard1:
-        allKeyboard.append(element)
 
+    for element in allKeyboard0: #convert into a list and remove some suffix and prefix
+        string=str(element)
+        allKeyboard.append(string.removeprefix("('").removesuffix("',)"))
+
+    """
+        qui mi preparo a dividere la tastiera in 4 parti,
+        ho trovato manualmente i nomi che mi dividono la tastiera,
+        in 4 parti quasi uguali senza dover dividere i nomi con la stessa iniziale
+    """
     fineUno = allKeyboard.index("D`ALESSANDRO AURA")
     fineDue = allKeyboard.index("EVANGELISTA FILIPPO")
     fineTre = allKeyboard.index("PAGLIARA DANIELA")
     fineQuattro = allKeyboard.index("ZENONI CRISTINA")+1
 
     for i in range(0, fineUno):
-        tastiera1.append([allKeyboard[i]]) # [ ] beacous it need to be a (1,len) matrix
+        tastiera1.append([allKeyboard[i]]) # [ ] because they need to be a matrix (1,len of initial list)
     for i in range(fineUno, fineDue):
         tastiera2.append([allKeyboard[i]])
     for i in range(fineDue, fineTre):
@@ -143,50 +148,50 @@ keyboardsgen()
 
 #function to find the type of message
 def get_response(input_string):
-    split_message = re.split(r'\s+|[,;?!.-]\s*', input_string.lower())
-    score_list = []
+        split_message = re.split(r'\s+|[,;?!.-]\s*', input_string.lower())
+        score_list = []
 
-    # Check all the responses
-    for response in response_data:
-        response_score = 0
-        required_score = 0
-        required_words = response["required_words"]
+        # Check all the responses
+        for response in response_data:
+            response_score = 0
+            required_score = 0
+            required_words = response["required_words"]
 
-        # Check if there are any required words
-        if required_words:
-            for word in split_message:
-                if word in required_words:
-                    required_score += 1
+            # Check if there are any required words
+            if required_words:
+                for word in split_message:
+                    if word in required_words:
+                        required_score += 1
 
-        # Amount of required words should match the required score
-        if required_score == len(required_words):
-            # Check each word the user has typed
-            for word in split_message:
-                # If the word is in the response, add to the score
-                if word in response["user_input"]:
-                    response_score += 1
-        # Add score to list
-        score_list.append(response_score)
-        # Debugging: Find the best phrase
+            # Amount of required words should match the required score
+            if required_score == len(required_words):
+                # Check each word the user has typed
+                for word in split_message:
+                    # If the word is in the response, add to the score
+                    if word in response["user_input"]:
+                        response_score += 1
+            # Add score to list
+            score_list.append(response_score)
+            # Debugging: Find the best phrase
 
-    # Find the best response and return it if they're not all 0
-    best_response = max(score_list)
-    response_index = score_list.index(best_response)
+        # Find the best response and return it if they're not all 0
+        best_response = max(score_list)
+        response_index = score_list.index(best_response)
 
-    # Check if input is empty
-    if input_string == "":
-        return -1
+        # Check if input is empty
+        if input_string == "":
+            return -1
 
 
-    if best_response != 0:
-        rt=["",""]
-        rt[0] = response_data[response_index]["bot_response"] #return the response
-        rt[1] = response_data[response_index]["response_type"] #return the type of response
-        return rt
-    else:
-        # If there is no good response, return errore
-        return ["Puoi ripetere?","errore"]
-    #we need both the response and the type for some function when the message for the user is bot_response
+        if best_response != 0:
+            rt=["",""]
+            rt[0] = response_data[response_index]["bot_response"] #return the response
+            rt[1] = response_data[response_index]["response_type"] #return the type of response
+            return rt
+        else:
+            # If there is no good response, return errore
+            return ["Puoi ripetere?","errore"]
+        #we need both the response and the type for some function when the message for the user is bot_response
 
 def addLog(message):  # function to add the log element into the database
     global cursor
@@ -219,17 +224,17 @@ def addLog(message):  # function to add the log element into the database
 
     connection.commit() # commit the changes
 
-def addLogInfo(message,response, risposta): # function to prepare the log element into the database (not sanding)
+def addLogInfo(message,response, output): # function to prepare the log element into the database (not sanding)
     global feedbot
     global feedresponse
     global feedmessage
 
     feedmessage = message.text
     feedresponse = response
-    feedbot = risposta
+    feedbot = output
 
 
-def feedbacktry(message,response,risposta): # function to not always ask the user if he wants to give a feedback
+def feedbacktry(message,response,output): # function to not always ask the user if he wants to give a feedback
     global feedmessage
     global feedresponse
     global feedbot
@@ -241,7 +246,7 @@ def feedbacktry(message,response,risposta): # function to not always ask the use
         # save the message info
         feedmessage = message.text
         feedresponse = response
-        feedbot = risposta
+        feedbot = output
         return True
     else:
         return False
@@ -257,7 +262,7 @@ def similarity(string1, string2): # function to calculate the similarity between
         percent_distance = 100 * (max_length - distance) / max_length # convert into %
     return percent_distance
 
-def closest_substring(string, list):
+def mostSimilarFromList(string, list):
     words = string.split() #divide the string into a list of words
     n = len(words)
     closest = None
@@ -281,19 +286,20 @@ def closest_substring(string, list):
 
 
 def prof_info(msg,orario,giorno): #function to get the info about the professor
-    global risposta
-    global cursor
-    cursor.execute(f"SELECT ID FROM professori WHERE Nome = '{msg.text}'")
-    PROF_ID = cursor.fetchall()  # id prof
+    global output
 
-    PROF_ID = PROF_ID[0][0]
+    cursor.execute(f"SELECT ID FROM professori WHERE Nome = '{msg.text}'") # obtain the id of the professor
+    PROF_ID = cursor.fetchall()  # id prof
+    PROF_ID = PROF_ID[0][0] # take the id from the tuple
+
     currentDateTime = datetime.now()  # actual date and time
 
-
-    if(giorno == -1):
-        Giorno = currentDateTime.isoweekday()  # day of the week
+    if(giorno == -1): # if the user don't specify the day
+        Giorno = currentDateTime.isoweekday()  # actual day of the week
     else:
         Giorno = giorno
+
+    # convert the day of the week into the name of the column in the database
     if (Giorno == 1):
         Giorno = "orarioproflunedì"
     elif (Giorno == 2):
@@ -304,22 +310,25 @@ def prof_info(msg,orario,giorno): #function to get the info about the professor
         Giorno = "orarioprofgiovedì"
     elif (Giorno == 5):
         Giorno = "orarioprofvenerdì"
-    else:
-        risposta= "Sei nel giorno sbagliato"
-        bot.send_message(msg.chat.id, text="Sei nel giorno sbagliato")
-        return risposta
+
+    else: # if the day is not correct
+        output= "Sei nel giorno sbagliato"
+        bot.send_message(msg.chat.id, text=output)
+        return output
 
 
-    if(orario == -1):
+    if(orario == -1): # if the user don't specify the hour
         Ora = currentDateTime.hour  # actual hour
     else:
-        Ora = orario
+        Ora = orario -7 #-7 beacouse we use to talk about (frist, second, third...) hour and not about the actual hour for the clock
 
-    Ora -= 7              #indent for the database
+
     if ((Giorno != "orarioproflunedì" and Ora > 6) or Ora <= 0 or Ora > 8):  # control if the hour is correct
-        risposta='Ora sbagliata!'
-        bot.send_message(msg.chat.id, text="Ora sbagliata!")
-        return risposta
+        output='Ora sbagliata!'
+        bot.send_message(msg.chat.id, text=output)
+        return output
+
+    # convert the hour into the name of the column in the database
     if (Ora == 1):
         Ora = "primaOra"
     elif (Ora == 2):
@@ -339,32 +348,33 @@ def prof_info(msg,orario,giorno): #function to get the info about the professor
 
 
 
-    cursor.execute(f"SELECT {Ora} FROM {Giorno} WHERE IdProf = '{PROF_ID}'")
+    cursor.execute(f"SELECT {Ora} FROM {Giorno} WHERE IdProf = '{PROF_ID}'") # obtain the class where the professor is in that hour
     Classe = cursor.fetchall()  # class found
-    Classe = Classe[0][0]
+    Classe = Classe[0][0] # take the class from the tuple
+
     if(Classe=="libero" or Classe=="Libero"):   #control if the professor is free all hours
-        cursor.execute(f"SELECT primaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'")
+        cursor.execute(f"SELECT primaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'") #control frist hour
         prima = cursor.fetchall()
 
-        cursor.execute(f"SELECT secondaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'")
+        cursor.execute(f"SELECT secondaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'") #control second hour
         seconda = cursor.fetchall()
 
-        cursor.execute(f"SELECT terzaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'")
+        cursor.execute(f"SELECT terzaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'") #control third hour
         terza = cursor.fetchall()
 
-        cursor.execute(f"SELECT quartaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'")
+        cursor.execute(f"SELECT quartaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'") #control fourth hour
         quarta = cursor.fetchall()
 
-        cursor.execute(f"SELECT quintaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'")
+        cursor.execute(f"SELECT quintaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'") #control fifth hour
         quinta = cursor.fetchall()
 
-        cursor.execute(f"SELECT sestaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'")
+        cursor.execute(f"SELECT sestaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'")  #control sixth hour
         sesta = cursor.fetchall()
         #control if the professor is free all hours
         if (prima[0][0]=="libero" and seconda[0][0]=="libero" and terza[0][0]=="libero" and quarta[0][0]=="libero" and quinta[0][0]=="libero" and sesta[0][0]=="libero"): return 2
         elif (prima[0][0]=="Libero" and seconda[0][0]=="Libero" and terza[0][0]=="Libero" and quarta[0][0]=="Libero" and quinta[0][0]=="Libero" and sesta[0][0]=="Libero"): return 2
 
-        return 1 #only the hour
+        return "libero" #only the hour
 
 
     cursor.execute(f"SELECT IDaula FROM classi WHERE classe = '{Classe}'") # id aula
@@ -376,10 +386,10 @@ def prof_info(msg,orario,giorno): #function to get the info about the professor
     Palazzina = Aula[0][0]
     Piano = Aula[0][1]
     nAula = Aula[0][2]
-    result = [Palazzina,Piano,nAula]
+    result = [Palazzina,Piano,nAula,Classe]
     return result
 
-def cerca_orario(str): #function to find the hour in the string
+def FindTime(str): #function to find the hour in the string
     str = re.split(' ', str.lower())
     tot = 0
     nulla=True
@@ -428,24 +438,19 @@ def cerca_orario(str): #function to find the hour in the string
         return tot
 
 #searching the name of the professor
-def find2(str):
-    name=closest_substring(str.upper(), allKeyboard)
-    if (name == None):
-        return 0
-    else: return name
 
-def findsolonome(str):
+def FindIfOnlyName(str,lista):
     str = re.split(' ', str.upper())
     if len(str)>3:
         return False
     for c in str: #entro nella lista di parole
-        for i in allKeyboard: #entro nella lista di liste di tasti
+        for i in lista: #entro nella lista di liste di tasti
             if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in i):
-                return i
+                return True
     return False
 
 #searching the day
-def cerca_giorno(str):
+def findDay(str):
     str = re.split(' ', str.lower()) #split the string in the char " "
     for c in str:
         if ("luned" in c): #if the word is "lunedì" the day is 1
@@ -464,55 +469,58 @@ def cerca_giorno(str):
             return 7
     return -1
 
-def invia(message,type,inQuestoMomento):
+
+
+def sand(message,type,inQuestoMomento):
     original_message= message.text
-    message.text = find2(
-        message.text)  # modify the message text to the name of the professor (to work in some functions)
+    message.text = mostSimilarFromList(
+        message.text.upper(), allKeyboard)  # modify the message text to the name of the professor (to work in some functions)
 
     if (inQuestoMomento):
         ora=-1
         giorno=-1
     else:
-        ora = cerca_orario(original_message)  # search the time
-        giorno = cerca_giorno(original_message)  # search the day
+        ora = FindTime(original_message)  # search the time
+        giorno = findDay(original_message)  # search the day
 
     info = prof_info(message, ora,
                      giorno)  # get the info about the professor (ora and giorno can be '-1' if not found)
 
-    if (info == 1):  # if he is free
-        bot.send_message(message.chat.id, text=f"Il prof {message.text.title()} è libero")  # if he is free
-        risposta = f"Il prof {message.text.title()} è libero"
+    if (info == "libero"):  # if he is free
+        output = f"Il prof {message.text.title()} è libero"
+        bot.send_message(message.chat.id, text=output)  # if he is free
+
 
     elif (info == 2):  # if he is not in school
-        bot.send_message(message.chat.id,
-                         text=f"Il prof oggi non c'è a scuola")  # if he is not in school all time
-        risposta = f"Il prof oggi non c'è a scuola"
+        output = f"Il prof oggi non c'è a scuola"
+        bot.send_message(message.chat.id, output)  # if he is not in school all time
+
     elif (info == "Sei nel giorno sbagliato!" or info=="Ora sbagliata!"):  # if the name is not correct
-        risposta=info
+        output=info
     else:  # if he is in school
-        bot.send_message(message.chat.id,
-                         text=f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}")  # if he is in school
-        risposta = f"Il prof {message.text.title()} si trova in: \nPalazzina: {info[0]} \nPiano: {info[1]} \nAula: {info[2]}"
+        output = f"Il prof {message.text.title()} si trova nella classe {info[3]} in: \n Palazzina: {info[0]} \n Piano: {info[1]} \n Aula: {info[2]}"
+        bot.send_message(message.chat.id, text=output)  # if he is in school
+
 
 
     message.text = original_message  # original message
-    feeding = feedbacktry(message, type, risposta)  # ask for feedback
+    feeding = feedbacktry(message, type, output)  # ask for feedback
     if (feeding):
         return 0  # if the user wants to give feedback, stop the function
 
     message.text = original_message  # original message
-    addLogInfo(message, type, risposta)  # add the log
+    addLogInfo(message, type, output)  # add the log
     addLog(message)  # add the log into db
 
-def inviasingolo(message,type,response):
-    global risposta
+def sandOne(message,type,response):
+    global output
     bot.send_message(message.chat.id, text=response)  # send the response of type of message requested
-    risposta = response  # save the response
+    output = response  # save the response
 
-    feeding = feedbacktry(message, type, risposta)  # ask for feedback
+    feeding = feedbacktry(message, type, output)  # ask for feedback
     if (feeding):
         return 0  # if the user wants to give feedback, stop the function
-    addLogInfo(message, type, risposta)  # add the log
+    addLogInfo(message, type, output)  # add the log
     addLog(message)  # add the log into db
     return 0  # stop the function
 
@@ -525,36 +533,36 @@ def start(client,message):
 
 @bot.on_message(filters.command(commands=['help']))
 def help(client,message):
-    message.reply(text="Comandi:\n \n/start - Il bot inizia, puoi usarlo per far apparire i pulsanti \n/find - cerca un professore \n/help - info e lista comandi \n/clear - per resettare la chat \n \nPer aiuto o feedback scrivi al numero: \n +39 3924502802 \n ", reply_markup=MAIN_BUTTONS)
+    message.reply(text="Ehi, usa il bot per cercare l'aula in cui si trova un professore \n\n Comandi:\n \n/start - Il bot inizia, puoi usarlo per far apparire i pulsanti \n/find - cerca un professore \n/help - info e lista comandi \n\nChiedimi dove s trova un professore(Es. Dove si trova Acciavatti Cristiano alla quarta ora di venerdi?) \n \nPer aiuto o feedback scrivi al numero: \n +39 3924502802 \n ", reply_markup=MAIN_BUTTONS)
 
 
-@bot.on_message(filters.command(commands=['clear'])) #???
-def easteregg(client,message):
-    bot.send_message(message.chat.id, text="Federico Ruffini")
-
-@bot.on_message(filters.command(commands=['find'])) #find a proffesor
+@bot.on_message(filters.command(commands=['find'])) #find a profesor from a part of a name
 def find(client,message):
-    newKeyboard=[]
+
+    newKeyboard=[] #prepere the keyboard where the user see the result
     for c in range(0,len(allKeyboard)):
-        newKeyboard.append([""])
+         newKeyboard.append([])
 
     trovato=False
     cnt=0
-    text=message.text
-    text=re.sub("/find ", "", text) #remove /find
-    text=text.upper()
-    for i in range(0,len(allKeyboard)):
-        if (text in allKeyboard[i]):
-            trovato=True
-            newKeyboard[cnt][0]=allKeyboard[i]
-            cnt+=1
-    if trovato:
-        reply_markup=ReplyKeyboardMarkup(newKeyboard,one_time_keyboard=True,resize_keyboard=True)
-        message.reply(text="Habbiamo trovato questi risultati, sceglierne uno:",reply_markup=reply_markup)
+    message.text=re.sub("/find ", "", message.text) #remove /find
+    message.text=message.text.upper()
+    
+    
+    for element in allKeyboard: #for each name in the keyboard
+        
+        nomeseparato=re.split(" ",element) #split the name into a list of words (ex. "Cristiano Acciavatti" -> ["Cristiano","Acciavatti"])
+        
+        for nome in nomeseparato: #for each word in the name
+            if (similarity(message.text,nome)>40 and len(nome)>2): #if the similarity is >40 and the word is >2 characters(so no "DI" or "DE")
+                trovato=True
+                newKeyboard[cnt].append(element) #add the name to the keyboard that will be shown to the user
+                cnt+=1
+    if trovato: #if we found something
+        reply_markup=ReplyKeyboardMarkup(newKeyboard,one_time_keyboard=True,resize_keyboard=True) #create the keyboard object
+        message.reply(text="Habbiamo trovato questi risultati, sceglierne uno per vedere dove si trova ora:",reply_markup=reply_markup) #send the keyboard
     else:
-        global MAIN_BUTTONS
-        reply_markup=ReplyKeyboardMarkup(MAIN_BUTTONS,one_time_keyboard=True,resize_keyboard=True)
-        message.reply(text="Non ho trovato nulla :_( ",reply_markup=reply_markup)
+        message.reply(text="Non ho trovato nulla, prova a darci piu lettere :_( ",reply_markup=MAIN_BUTTONS) #if we don't found anything
   
       
 
@@ -567,6 +575,7 @@ def Main(client,message):
         addLog(message) #add the log
         bot.send_message(message.chat.id, text="Grazie per il feedback!", reply_markup=MAIN_BUTTONS)
 
+    #if the user is using buttons and want to search a professor
     elif(message.text=="A-C"):
         message.reply(text="Button:",reply_markup=tastiera1)
 
@@ -582,19 +591,18 @@ def Main(client,message):
     elif(message.text=="<<<---------"):
         message.reply(text="Button:", reply_markup=MAIN_BUTTONS)
 
+    #if is not a menu navigation and not a feedback
     else:
-        response = get_response(message.text)  # get the response from the type of message requested
+        response = get_response(message.text)  # get the type of message and the response(usable if he isn't asking a professor)
 
         type = response[1]  # get the type of message
         response = response[0]  # get the response
 
-        daibottoni = findsolonome(message.text)
-        if(daibottoni): #if the message is only a name (True means that the date and time is when message is sent)
-            invia(message,type, True)
-        elif(response=="ricerca professore"): #if the message is for searching a professor (False means that the date and time is specified in the message)
-            invia(message,type, False)
+        daibottoni = FindIfOnlyName(message.text,allKeyboard)
+        if(response=="ricerca professore" or daibottoni): #if is searching a professor
+            sand(message,type,daibottoni)
         else: #if the message else
-            inviasingolo(message,type, response)
+            sandOne(message,type, response)
 
 
 

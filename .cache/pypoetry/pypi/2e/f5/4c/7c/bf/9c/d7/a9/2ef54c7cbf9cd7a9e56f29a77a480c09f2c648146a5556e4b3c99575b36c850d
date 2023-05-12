@@ -1,1 +1,0 @@
-9999999999{"name": "Pyrogram", "version": "2.0.97", "summary": "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots", "platform": null, "requires_dist": ["pyaes (==1.6.1)", "pysocks (==1.7.1)"], "requires_python": "~=3.7", "files": [], "_cache_version": "1.0.0"}
