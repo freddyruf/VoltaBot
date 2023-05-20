@@ -5,8 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a7ba2791-f574-4284-98ea-522a090df4f0" name="Changes" comment="final commit ?">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/203ce3a4-05da-4b40-95ac-511d9ae7f68a.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/203ce3a4-05da-4b40-95ac-511d9ae7f68a/storage_v2/_src_/schema/information_schema.FNRwLQ.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/203ce3a4-05da-4b40-95ac-511d9ae7f68a/storage_v2/_src_/schema/information_schema.FNRwLQ.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/203ce3a4-05da-4b40-95ac-511d9ae7f68a/storage_v2/_src_/schema/mysql.osA4Bg.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/203ce3a4-05da-4b40-95ac-511d9ae7f68a/storage_v2/_src_/schema/performance_schema.kIw0nw.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/203ce3a4-05da-4b40-95ac-511d9ae7f68a/storage_v2/_src_/schema/sys.zb4BAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_account.session" beforeDir="false" afterPath="$PROJECT_DIR$/my_account.session" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,6 +28,7 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
     <option name="PUSH_TAGS">
       <GitPushTagMode>
         <option name="argument" value="--tags" />
@@ -122,7 +130,8 @@
       <workItem from="1684259226368" duration="659000" />
       <workItem from="1684325464047" duration="631000" />
       <workItem from="1684573311844" duration="6000" />
-      <workItem from="1684582032451" duration="2064000" />
+      <workItem from="1684582032451" duration="2249000" />
+      <workItem from="1684588081491" duration="381000" />
     </task>
     <task id="LOCAL-00001" summary="x">
       <created>1679331830210</created>
@@ -229,7 +238,21 @@
       <option name="project" value="LOCAL" />
       <updated>1683901543505</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="final commit ?">
+      <created>1684584471684</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1684584471684</updated>
+    </task>
+    <task id="LOCAL-00017" summary="final commit ?">
+      <created>1684584630668</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1684584630668</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

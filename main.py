@@ -394,6 +394,21 @@ def prof_info(msg,orario,giorno): #function to get the info about the professor
     }
     return result
 
+
+
+#searching the name of the professor
+
+def FindIfOnlyName(str,lista):
+    str = re.split(' ', str.upper())
+    if len(str)>3:
+        return False
+    for c in str: #entro nella lista di parole
+        
+        for i in lista: #entro nella lista di liste di tasti
+            if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in i):
+                return True
+    return False
+
 def FindTime(str): #function to find the hour in the string
     str = re.split(' ', str.lower())
     tot = 0
@@ -441,19 +456,6 @@ def FindTime(str): #function to find the hour in the string
         return -1
     else: #found
         return tot
-
-#searching the name of the professor
-
-def FindIfOnlyName(str,lista):
-    str = re.split(' ', str.upper())
-    if len(str)>3:
-        return False
-    for c in str: #entro nella lista di parole
-        
-        for i in lista: #entro nella lista di liste di tasti
-            if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in i):
-                return True
-    return False
 
 #searching the day
 def findDay(str):
