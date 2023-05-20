@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a7ba2791-f574-4284-98ea-522a090df4f0" name="Changes" comment="final commit ?">
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_account.session" beforeDir="false" afterPath="$PROJECT_DIR$/my_account.session" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--tags" />
+        <option name="title" value="All" />
+      </GitPushTagMode>
+    </option>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2NA3N26kI3vpZVVNARSA7D8CqIp" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/fedec/iCloudDrive/Lavori/DB/VoltaBot&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;ChangesTree.GroupingKeys&quot;: [
+      &quot;directory&quot;
+    ],
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;azure&quot;,
+      &quot;mysql&quot;
+    ]
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\fedec\iCloudDrive\Lavori\DB\VoltaBot" />
+      <recent name="C:\Users\fedec\iCloudDrive\Lavori\DB\VoltaBot\venv" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\fedec\iCloudDrive\Lavori\DB\VoltaBot\venv" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a7ba2791-f574-4284-98ea-522a090df4f0" name="Changes" comment="" />
+      <created>1679093015817</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1679093015817</updated>
+      <workItem from="1679093016917" duration="1231000" />
+      <workItem from="1679143317165" duration="290000" />
+      <workItem from="1679143616788" duration="2703000" />
+      <workItem from="1679166868357" duration="667000" />
+      <workItem from="1679220837475" duration="559000" />
+      <workItem from="1679222128561" duration="2903000" />
+      <workItem from="1679225257048" duration="805000" />
+      <workItem from="1679243263745" duration="910000" />
+      <workItem from="1679304892671" duration="2131000" />
+      <workItem from="1679665099984" duration="10985000" />
+      <workItem from="1679732076952" duration="2671000" />
+      <workItem from="1679736466443" duration="8000" />
+      <workItem from="1679736687008" duration="1252000" />
+      <workItem from="1679738831994" duration="2287000" />
+      <workItem from="1679741533914" duration="3318000" />
+      <workItem from="1679824011298" duration="8329000" />
+      <workItem from="1680534656269" duration="695000" />
+      <workItem from="1680764963435" duration="18000" />
+      <workItem from="1681075043930" duration="180000" />
+      <workItem from="1681325328097" duration="45000" />
+      <workItem from="1682843302157" duration="3208000" />
+      <workItem from="1682855705259" duration="5016000" />
+      <workItem from="1682870246460" duration="644000" />
+      <workItem from="1682930685930" duration="1764000" />
+      <workItem from="1682963618931" duration="1298000" />
+      <workItem from="1682972101529" duration="2026000" />
+      <workItem from="1683007353205" duration="1285000" />
+      <workItem from="1683040686927" duration="4244000" />
+      <workItem from="1683052015741" duration="1926000" />
+      <workItem from="1683054282565" duration="643000" />
+      <workItem from="1683107416208" duration="619000" />
+      <workItem from="1683209345628" duration="4460000" />
+      <workItem from="1683220291684" duration="40000" />
+      <workItem from="1683636352436" duration="5623000" />
+      <workItem from="1683889187054" duration="331000" />
+      <workItem from="1683889665692" duration="3513000" />
+      <workItem from="1683895938323" duration="6207000" />
+      <workItem from="1683902186151" duration="4000" />
+      <workItem from="1684259226368" duration="659000" />
+      <workItem from="1684325464047" duration="631000" />
+      <workItem from="1684573311844" duration="6000" />
+      <workItem from="1684582032451" duration="2064000" />
+    </task>
+    <task id="LOCAL-00001" summary="x">
+      <created>1679331830210</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1679331830210</updated>
+    </task>
+    <task id="LOCAL-00002" summary="x">
+      <created>1679668604231</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1679668604231</updated>
+    </task>
+    <task id="LOCAL-00003" summary="x">
+      <created>1679675898924</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1679675898924</updated>
+    </task>
+    <task id="LOCAL-00004" summary="x">
+      <created>1679676176942</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1679676176942</updated>
+    </task>
+    <task id="LOCAL-00005" summary="x">
+      <created>1679682821693</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1679682821693</updated>
+    </task>
+    <task id="LOCAL-00006" summary="x">
+      <created>1679751603695</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1679751603695</updated>
+    </task>
+    <task id="LOCAL-00007" summary="x">
+      <created>1679832663341</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1679832663341</updated>
+    </task>
+    <task id="LOCAL-00008" summary="x">
+      <created>1681075199891</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1681075199891</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Distanza di edit">
+      <created>1682932283377</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1682932283377</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Ordine p1">
+      <created>1683044931281</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1683044931281</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Ordine p1">
+      <created>1683053946156</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1683053946156</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Ordine p2">
+      <created>1683211673668</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1683211673668</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Ordine p2">
+      <created>1683220299894</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1683220299894</updated>
+    </task>
+    <task id="LOCAL-00014" summary="sql export file and comment">
+      <created>1683641797140</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1683641797140</updated>
+    </task>
+    <task id="LOCAL-00015" summary="final commit ?">
+      <created>1683901543505</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1683901543505</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="x" />
+    <MESSAGE value="Distanza di edit" />
+    <MESSAGE value="Ordine p1" />
+    <MESSAGE value="Ordine p2" />
+    <MESSAGE value="sql export file" />
+    <MESSAGE value="sql export file and comment" />
+    <MESSAGE value="final commit ?" />
+    <option name="LAST_COMMIT_MESSAGE" value="final commit ?" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/VoltaBot$main.coverage" NAME="main Coverage Results" MODIFIED="1684584422076" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/VoltaBot$keyboards.coverage" NAME="keyboards Coverage Results" MODIFIED="1683042961464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/VoltaBot$videoprova.coverage" NAME="videoprova Coverage Results" MODIFIED="1679680339204" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/VoltaBot$Speech_Text.coverage" NAME="Speech_Text Coverage Results" MODIFIED="1679665630969" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$USER_HOME$/Downloads" />
+    <SUITE FILE_PATH="coverage/VoltaBot$mainforaudiovideo.coverage" NAME="mainforaudiovideo Coverage Results" MODIFIED="1682932160991" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>
