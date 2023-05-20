@@ -139,7 +139,7 @@ def keyboardsgen():
     for i in range(fineTre, fineQuattro):
         tastiera4.append([allKeyboard[i]])
 
-    tastiera1=ReplyKeyboardMarkup(tastiera1, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
+    tastiera1 = ReplyKeyboardMarkup(tastiera1, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
     tastiera2 = ReplyKeyboardMarkup(tastiera2, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
     tastiera3 = ReplyKeyboardMarkup(tastiera3, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
     tastiera4 = ReplyKeyboardMarkup(tastiera4, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
@@ -224,7 +224,7 @@ def addLog(message):  # function to add the log element into the database
 
     connection.commit() # commit the changes
 
-def addLogInfo(message,response, output): # function to prepare the log element into the database (not sanding)
+def prepareLogInfo(message,response, output): # function to prepare the log element into the database (not sanding)
     global feedbot
     global feedresponse
     global feedmessage
@@ -312,7 +312,7 @@ def prof_info(msg,orario,giorno): #function to get the info about the professor
         Giorno = "orarioprofvenerdì"
 
     else: # if the day is not correct
-        output= "Sei nel giorno sbagliato"
+        output= "Sei nel giorno sbagliato!"
         bot.send_message(msg.chat.id, text=output)
         return output
 
@@ -386,7 +386,12 @@ def prof_info(msg,orario,giorno): #function to get the info about the professor
     Palazzina = Aula[0][0]
     Piano = Aula[0][1]
     nAula = Aula[0][2]
-    result = [Palazzina,Piano,nAula,Classe]
+    result = {
+        "Classe": Classe,
+        "Palazzina": Palazzina,
+        "Piano": Piano,
+        "Aula": nAula
+    }
     return result
 
 def FindTime(str): #function to find the hour in the string
@@ -444,6 +449,7 @@ def FindIfOnlyName(str,lista):
     if len(str)>3:
         return False
     for c in str: #entro nella lista di parole
+        
         for i in lista: #entro nella lista di liste di tasti
             if (len(c)>4 and c[0]+c[1]+c[2]+c[3]+c[4] in i):
                 return True
@@ -467,6 +473,19 @@ def findDay(str):
             return 6
         elif ("domenica" in c): #if the word is "domenica" the day is 7
             return 7
+        elif ("domani" in c and not("dopo"in c) and not("dopo"in str)): #if the word is "domani" and there isn't "dopo" the day is the next day
+            giorno= datetime.today().weekday()+2
+            if(giorno>7): giorno-=7
+            return giorno
+        elif ("domani" in c and ("dopo"in c or "dopo"in str)): #if the word is "domani" and there is "dopo" the day is the next next day
+            giorno= datetime.today().weekday()+3
+            if(giorno>7): giorno-=7
+            return giorno
+        elif ("ieri" in c): #if the word is "ieri" the day is the last day
+            giorno= datetime.today().weekday()
+            if(giorno>7): giorno-=7
+            return giorno
+
     return -1
 
 
@@ -498,7 +517,7 @@ def sand(message,type,inQuestoMomento):
     elif (info == "Sei nel giorno sbagliato!" or info=="Ora sbagliata!"):  # if the name is not correct
         output=info
     else:  # if he is in school
-        output = f"Il prof {message.text.title()} si trova nella classe {info[3]} in: \n Palazzina: {info[0]} \n Piano: {info[1]} \n Aula: {info[2]}"
+        output = f"Il prof {message.text.title()} si trova nella classe {info['Classe']} in: \n-Palazzina: {info['Palazzina']} \n-Piano: {info['Piano']} \n-Aula: {info['Aula']}"
         bot.send_message(message.chat.id, text=output)  # if he is in school
 
 
@@ -509,7 +528,7 @@ def sand(message,type,inQuestoMomento):
         return 0  # if the user wants to give feedback, stop the function
 
     message.text = original_message  # original message
-    addLogInfo(message, type, output)  # add the log
+    prepareLogInfo(message, type, output)  # add the log
     addLog(message)  # add the log into db
 
 def sandOne(message,type,response):
@@ -520,7 +539,7 @@ def sandOne(message,type,response):
     feeding = feedbacktry(message, type, output)  # ask for feedback
     if (feeding):
         return 0  # if the user wants to give feedback, stop the function
-    addLogInfo(message, type, output)  # add the log
+    prepareLogInfo(message, type, output)  # add the log
     addLog(message)  # add the log into db
     return 0  # stop the function
 
