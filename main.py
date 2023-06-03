@@ -352,7 +352,7 @@ def prof_info(msg,orario,giorno): #function to get the info about the professor
     Classe = cursor.fetchall()  # class found
     Classe = Classe[0][0] # take the class from the tuple
 
-    if(Classe=="libero" or Classe=="Libero"):   #control if the professor is free all hours
+    if Classe in ("libero", "Libero"):   #control if the professor is free all hours
         cursor.execute(f"SELECT primaOra FROM {Giorno} WHERE IdProf = '{PROF_ID}'") #control frist hour
         prima = cursor.fetchall()
 
@@ -516,7 +516,7 @@ def sand(message,type,inQuestoMomento):
         output = f"Il prof oggi non c'è a scuola"
         bot.send_message(message.chat.id, output)  # if he is not in school all time
 
-    elif (info == "Sei nel giorno sbagliato!" or info=="Ora sbagliata!"):  # if the name is not correct
+    elif info in ("Sei nel giorno sbagliato!", "Ora sbagliata!"):  # if the name is not correct
         output=info
     else:  # if he is in school
         output = f"Il prof {message.text.title()} si trova nella classe {info['Classe']} in: \n-Palazzina: {info['Palazzina']} \n-Piano: {info['Piano']} \n-Aula: {info['Aula']}"
@@ -592,7 +592,7 @@ def find(client,message):
 def Main(client,message):
 
 
-    if(message.text==polliceInSu or message.text==polliceInGiù): #if the message is a thumbs up or down, so if the user give a feedback
+    if message.text in (polliceInSu, polliceInGiù): #if the message is a thumbs up or down, so if the user give a feedback
         addLog(message) #add the log
         bot.send_message(message.chat.id, text="Grazie per il feedback!", reply_markup=MAIN_BUTTONS)
 
