@@ -86,9 +86,8 @@ response_data = load_json("bot.json")
 
 
 # {{{ creating connection
-connection = None
 def create_connection(host_name, user_name, user_password):
-    global connection
+    connection = None
     try:
         connection = mysql.connector.connect(
             host=host_name,
@@ -104,7 +103,7 @@ connection = create_connection("localhost", "root", "")
 #}}} closing the connection function
 
 cursor = connection.cursor(buffered=True) #cursor /Read-only attribute describing the result of a query.
-def keyboardsgen():
+def keyboardsgen(cursor):
     global tastiera1
     global tastiera2
     global tastiera3
@@ -144,10 +143,10 @@ def keyboardsgen():
     tastiera3 = ReplyKeyboardMarkup(tastiera3, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
     tastiera4 = ReplyKeyboardMarkup(tastiera4, one_time_keyboard=True, resize_keyboard=True) #make keyboard object
 
-keyboardsgen()
+keyboardsgen(cursor)
 
 #function to find the type of message
-def get_response(input_string):
+def get_response(input_string,response_data):
         split_message = re.split(r'\s+|[,;?!.-]\s*', input_string.lower())
         score_list = []
 
@@ -507,17 +506,10 @@ def sand(message,type,inQuestoMomento):
     info = prof_info(message, ora,
                      giorno)  # get the info about the professor (ora and giorno can be '-1' if not found)
 
-    if (info == "libero"):  # if he is free
+    if not type(info) is dict:  # if he is free
         output = f"Il prof {message.text.title()} è libero"
         bot.send_message(message.chat.id, text=output)  # if he is free
 
-
-    elif (info == 2):  # if he is not in school
-        output = f"Il prof oggi non c'è a scuola"
-        bot.send_message(message.chat.id, output)  # if he is not in school all time
-
-    elif (info == "Sei nel giorno sbagliato!" or info=="Ora sbagliata!"):  # if the name is not correct
-        output=info
     else:  # if he is in school
         output = f"Il prof {message.text.title()} si trova nella classe {info['Classe']} in: \n-Palazzina: {info['Palazzina']} \n-Piano: {info['Piano']} \n-Aula: {info['Aula']}"
         bot.send_message(message.chat.id, text=output)  # if he is in school
@@ -614,7 +606,7 @@ def Main(client,message):
 
     #if is not a menu navigation and not a feedback
     else:
-        response = get_response(message.text)  # get the type of message and the response(usable if he isn't asking a professor)
+        response = get_response(message.text,response_data)  # get the type of message and the response(usable if he isn't asking a professor)
 
         type = response[1]  # get the type of message
         response = response[0]  # get the response
