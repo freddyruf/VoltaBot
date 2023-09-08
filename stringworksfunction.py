@@ -49,8 +49,9 @@ def mostSimilarFromList(string, list):
 def prof_info(msg, orario, giorno):  # function to get the info about the professor
     global output
 
-    cursor.execute(f"SELECT ID FROM professori WHERE Nome = '{msg.text}'")  # obtain the id of the professor
+    cursor.execute(f"SELECT ID FROM professori WHERE Nome = '{msg}'")  # obtain the id of the professor
     PROF_ID = cursor.fetchall()  # id prof
+    print(PROF_ID)
     PROF_ID = PROF_ID[0][0]  # take the id from the tuple
 
     currentDateTime = datetime.now()  # actual date and time

@@ -35,7 +35,9 @@ def sand(connection,cursor,message,type,inQuestoMomento,bot):
         giorno=-1
     else:
         ora = FindTime(original_message)  # search the time
+        print(ora)
         giorno = findDay(original_message)  # search the day
+        print(giorno)
 
     info = prof_info(message, ora,
                      giorno)  # get the info about the professor (ora and giorno can be '-1' if not found)

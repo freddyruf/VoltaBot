@@ -90,15 +90,8 @@ def addLog(connection,cursor,message,feedmessage,feedresponse,feedbot):  # funct
 
     timeinfo = date_str + " " + time_str # setup time for SQL datetime syntax
 
-    if (message.text == polliceInSu): # if the user give a feedback
-        feed = 1
-    elif (message.text == polliceInGiù): # if the user give a feedback
-        feed = -1
-    else: # if the user don't give a feedback
-        feed = 0
-
     cursor.execute(
-                f"INSERT INTO log (tempo, usertext, requestinfo, responsetext, feedback) VALUES ('{timeinfo}', '{feedmessage}','{feedresponse}', '{feedbot}', {feed});")
+                f"INSERT INTO log (tempo, usertext, requestinfo, responsetext, feedback) VALUES ('{timeinfo}', '{feedmessage}','{feedresponse}', '{feedbot}', {0});")
 
     # if (feed!=None): # if the user give a feedback
     #     cursor.execute(
@@ -120,7 +113,7 @@ def prepareLogInfo(message,response, output): # function to prepare the log elem
 
 def feedbacktry(message,response,output): # function to not always ask the user if he wants to give a feedback
 
-    feedmessage = message.text
+    feedmessage = message
     feedresponse = response
     feedbot = output
 
